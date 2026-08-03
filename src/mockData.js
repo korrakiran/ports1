@@ -1,4 +1,4 @@
-// Comprehensive mock data for MSME Global Trade Marketplace
+// Comprehensive mock data for MSME Global Trade Marketplace & PortsAI Engine
 
 export const CURRENT_USER = {
   name: "Alexander Vance",
@@ -23,6 +23,22 @@ export const MOCK_KPIS = {
   oppTrend: "+24 new today"
 };
 
+// All 12 target markets matching Step 3 & Step 4 of PortsAI reference
+export const TARGET_MARKETS_12 = [
+  { id: 'cn', country: 'China', flag: '🇨🇳', code: 'CN', demandScore: 'High', demandLevel: 'High', importValue: '$420.5M', yoyGrowth: '+22.4%', supplierAvailability: 'Very High', easeOfImport: 'Moderate', tariff: '4.5%' },
+  { id: 'us', country: 'United States', flag: '🇺🇸', code: 'US', demandScore: 'High', demandLevel: 'High', importValue: '$312.4M', yoyGrowth: '+15.2%', supplierAvailability: 'High', easeOfImport: 'Moderate', tariff: '3.2%' },
+  { id: 'de', country: 'Germany', flag: '🇩🇪', code: 'DE', demandScore: 'High', demandLevel: 'High', importValue: '$128.6M', yoyGrowth: '+18.6%', supplierAvailability: 'High', easeOfImport: 'Easy', tariff: '2.1%' },
+  { id: 'jp', country: 'Japan', flag: '🇯🇵', code: 'JP', demandScore: 'Medium', demandLevel: 'Medium', importValue: '$85.3M', yoyGrowth: '+9.7%', supplierAvailability: 'Medium', easeOfImport: 'Easy', tariff: '1.8%' },
+  { id: 'in', country: 'India', flag: '🇮🇳', code: 'IN', demandScore: 'High', demandLevel: 'High', importValue: '$195.2M', yoyGrowth: '+26.8%', supplierAvailability: 'High', easeOfImport: 'Easy', tariff: '5.0%' },
+  { id: 'kr', country: 'South Korea', flag: '🇰🇷', code: 'KR', demandScore: 'Medium', demandLevel: 'Medium', importValue: '$64.8M', yoyGrowth: '+11.4%', supplierAvailability: 'High', easeOfImport: 'Easy', tariff: '2.4%' },
+  { id: 'vn', country: 'Vietnam', flag: '🇻🇳', code: 'VN', demandScore: 'High', demandLevel: 'High', importValue: '$92.1M', yoyGrowth: '+31.0%', supplierAvailability: 'Very High', easeOfImport: 'Easy', tariff: '1.5%' },
+  { id: 'sg', country: 'Singapore', flag: '🇸🇬', code: 'SG', demandScore: 'Medium', demandLevel: 'Medium', importValue: '$42.1M', yoyGrowth: '+12.3%', supplierAvailability: 'High', easeOfImport: 'Easy', tariff: '0.0%' },
+  { id: 'my', country: 'Malaysia', flag: '🇲🇾', code: 'MY', demandScore: 'Medium', demandLevel: 'Medium', importValue: '$36.4M', yoyGrowth: '+8.9%', supplierAvailability: 'Medium', easeOfImport: 'Easy', tariff: '2.0%' },
+  { id: 'th', country: 'Thailand', flag: '🇹🇭', code: 'TH', demandScore: 'Medium', demandLevel: 'Medium', importValue: '$29.7M', yoyGrowth: '+7.6%', supplierAvailability: 'Medium', easeOfImport: 'Easy', tariff: '3.1%' },
+  { id: 'ae', country: 'UAE', flag: '🇦🇪', code: 'AE', demandScore: 'Medium', demandLevel: 'Medium', importValue: '$38.7M', yoyGrowth: '+10.1%', supplierAvailability: 'High', easeOfImport: 'Easy', tariff: '0.0%' },
+  { id: 'gb', country: 'United Kingdom', flag: '🇬🇧', code: 'GB', demandScore: 'High', demandLevel: 'High', importValue: '$110.8M', yoyGrowth: '+14.2%', supplierAvailability: 'High', easeOfImport: 'Moderate', tariff: '2.8%' },
+];
+
 export const MOCK_MARKETS = [
   {
     id: "de",
@@ -32,29 +48,15 @@ export const MOCK_MARKETS = [
     lat: 51.1657,
     lng: 10.4515,
     demandScore: 94,
-    demandLevel: "Very High",
+    demandLevel: "High",
     topImports: ["Organic Spices", "Solar Inverters", "Precision Tools"],
     tariffRate: "2.1%",
     avgShippingDays: 14,
-    yoyGrowth: "+24.5%",
-    marketSize: "$4.2B",
-    riskLevel: "Low"
-  },
-  {
-    id: "uae",
-    country: "United Arab Emirates",
-    flag: "🇦🇪",
-    code: "AE",
-    lat: 23.4241,
-    lng: 53.8478,
-    demandScore: 98,
-    demandLevel: "Extreme",
-    topImports: ["Basmati Rice", "Textiles", "Leather Goods"],
-    tariffRate: "0.0% (CEPA)",
-    avgShippingDays: 5,
-    yoyGrowth: "+38.2%",
-    marketSize: "$6.8B",
-    riskLevel: "Low"
+    yoyGrowth: "+18.6%",
+    marketSize: "$128.6M",
+    riskLevel: "Low",
+    supplierAvailability: "High",
+    easeOfImport: "Easy"
   },
   {
     id: "us",
@@ -68,9 +70,11 @@ export const MOCK_MARKETS = [
     topImports: ["Handicrafts", "Ceramic Tiles", "Agro-chemicals"],
     tariffRate: "3.4%",
     avgShippingDays: 21,
-    yoyGrowth: "+12.8%",
-    marketSize: "$18.5B",
-    riskLevel: "Low"
+    yoyGrowth: "+15.2%",
+    marketSize: "$312.4M",
+    riskLevel: "Low",
+    supplierAvailability: "High",
+    easeOfImport: "Moderate"
   },
   {
     id: "jp",
@@ -80,13 +84,51 @@ export const MOCK_MARKETS = [
     lat: 36.2048,
     lng: 138.2529,
     demandScore: 85,
-    demandLevel: "High",
+    demandLevel: "Medium",
     topImports: ["Herbal Extracts", "Software Solutions", "Silk Fabrics"],
     tariffRate: "1.8%",
     avgShippingDays: 12,
-    yoyGrowth: "+19.1%",
-    marketSize: "$3.9B",
-    riskLevel: "Low"
+    yoyGrowth: "+9.7%",
+    marketSize: "$85.3M",
+    riskLevel: "Low",
+    supplierAvailability: "Medium",
+    easeOfImport: "Easy"
+  },
+  {
+    id: "sg",
+    country: "Singapore",
+    flag: "🇸🇬",
+    code: "SG",
+    lat: 1.3521,
+    lng: 103.8198,
+    demandScore: 82,
+    demandLevel: "Medium",
+    topImports: ["Electronics", "Pharma", "Precision Sensors"],
+    tariffRate: "0.0%",
+    avgShippingDays: 8,
+    yoyGrowth: "+12.3%",
+    marketSize: "$42.1M",
+    riskLevel: "Low",
+    supplierAvailability: "High",
+    easeOfImport: "Easy"
+  },
+  {
+    id: "ae",
+    country: "UAE",
+    flag: "🇦🇪",
+    code: "AE",
+    lat: 23.4241,
+    lng: 53.8478,
+    demandScore: 98,
+    demandLevel: "Medium",
+    topImports: ["Basmati Rice", "Textiles", "Leather Goods"],
+    tariffRate: "0.0% (CEPA)",
+    avgShippingDays: 5,
+    yoyGrowth: "+10.1%",
+    marketSize: "$38.7M",
+    riskLevel: "Low",
+    supplierAvailability: "High",
+    easeOfImport: "Easy"
   },
   {
     id: "au",
@@ -96,44 +138,30 @@ export const MOCK_MARKETS = [
     lat: -25.2744,
     lng: 133.7751,
     demandScore: 78,
-    demandLevel: "Moderate",
+    demandLevel: "High",
     topImports: ["Auto Components", "Tea & Coffee", "Steel Fittings"],
     tariffRate: "0.0% (AI-ECTA)",
     avgShippingDays: 16,
     yoyGrowth: "+15.3%",
     marketSize: "$2.1B",
-    riskLevel: "Low"
-  },
-  {
-    id: "br",
-    country: "Brazil",
-    flag: "🇧🇷",
-    code: "BR",
-    lat: -14.2350,
-    lng: -51.9253,
-    demandScore: 72,
-    demandLevel: "Moderate",
-    topImports: ["Agro Equipment", "Pharmaceutical Intermediates"],
-    tariffRate: "6.5%",
-    avgShippingDays: 28,
-    yoyGrowth: "+8.4%",
-    marketSize: "$1.4B",
-    riskLevel: "Medium"
+    riskLevel: "Low",
+    supplierAvailability: "High",
+    easeOfImport: "Easy"
   }
 ];
 
 export const MOCK_OPPORTUNITIES = [
   {
     id: "OPP-9021",
-    title: "Premium Organic Cardamom & Black Pepper Bulk Supply",
-    hsCode: "0908.31",
-    category: "Agriculture & Spices",
+    title: "Premium Wireless Earbuds Bulk Distribution (ANC)",
+    hsCode: "8518.30",
+    category: "Electronics",
     destination: "Germany",
     flag: "🇩🇪",
-    importerName: "BioHerb Logistics GmBH",
+    importerName: "EuroTech Audio GmBH",
     verified: true,
-    volumeRequired: "45 Metric Tons / Mo",
-    targetPrice: "$18.50 / kg",
+    volumeRequired: "25,000 Units / Mo",
+    targetPrice: "$28.50 / unit",
     estimatedMargin: "34%",
     opportunityScore: 96,
     matchingRate: "98%",
@@ -145,7 +173,7 @@ export const MOCK_OPPORTUNITIES = [
     title: "Industrial Grade Solar Inverters (5kW - 50kW)",
     hsCode: "8504.40",
     category: "Renewable Energy",
-    destination: "United Arab Emirates",
+    destination: "UAE",
     flag: "🇦🇪",
     importerName: "Al-Maktoum CleanTech LLC",
     verified: true,
@@ -213,15 +241,15 @@ export const MOCK_OPPORTUNITIES = [
 export const MOCK_TRANSACTIONS = [
   {
     id: "TRX-44910",
-    product: "Organic Cardamom (Batch #DE-90)",
-    partner: "BioHerb Logistics GmBH (Germany)",
+    product: "Wireless Earbuds ANC (Batch #DE-90)",
+    partner: "EuroTech Audio GmBH (Germany)",
     value: "$185,000",
     status: "Customs Clearance",
     step: 3,
     totalSteps: 5,
     eta: "Aug 12, 2026",
     paymentStatus: "Escrow Locked (70%)",
-    hsCode: "0908.31",
+    hsCode: "8518.30",
     carrier: "Maersk Line (Container #MSK-9921)",
     docsReady: 4,
     docsTotal: 5
@@ -276,15 +304,15 @@ export const MOCK_TRANSACTIONS = [
 export const MOCK_NETWORK = [
   {
     id: "NET-101",
-    name: "BioHerb Logistics GmBH",
+    name: "EuroTech Audio GmBH",
     type: "Importer / Distributor",
     country: "Germany",
     flag: "🇩🇪",
     trustRating: 4.9,
     completedDeals: 142,
-    certifications: ["ISO 9001", "EU Organic", "GMP"],
+    certifications: ["ISO 9001", "CE Certified", "RoHS"],
     contactPerson: "Dr. Klaus Weber",
-    email: "k.weber@bioherb.de",
+    email: "k.weber@eurotech.de",
     responseRate: "99%",
     verifiedSince: "2021"
   },
@@ -292,7 +320,7 @@ export const MOCK_NETWORK = [
     id: "NET-102",
     name: "Al-Maktoum CleanTech LLC",
     type: "Enterprise Buyer",
-    country: "United Arab Emirates",
+    country: "UAE",
     flag: "🇦🇪",
     trustRating: 4.8,
     completedDeals: 88,
@@ -315,15 +343,29 @@ export const MOCK_NETWORK = [
     email: "s.jenkins@ecostyle.com",
     responseRate: "97%",
     verifiedSince: "2020"
+  },
+  {
+    id: "NET-104",
+    name: "Nippon Global Trading Corp",
+    type: "Tier 1 Consignee",
+    country: "Japan",
+    flag: "🇯🇵",
+    trustRating: 5.0,
+    completedDeals: 310,
+    certifications: ["JIS Standard", "ISO 14001"],
+    contactPerson: "Kenji Sato",
+    email: "sato@nippontrade.co.jp",
+    responseRate: "100%",
+    verifiedSince: "2019"
   }
 ];
 
 export const DEMAND_TREND_CHART = [
-  { month: "Jan", Spices: 4000, CleanTech: 2400, Textiles: 2400 },
-  { month: "Feb", Spices: 4500, CleanTech: 2800, Textiles: 2200 },
-  { month: "Mar", Spices: 5100, CleanTech: 3500, Textiles: 2800 },
-  { month: "Apr", Spices: 5800, CleanTech: 4200, Textiles: 3100 },
-  { month: "May", Spices: 6400, CleanTech: 4900, Textiles: 3900 },
-  { month: "Jun", Spices: 7200, CleanTech: 5800, Textiles: 4300 },
-  { month: "Jul", Spices: 8100, CleanTech: 6700, Textiles: 4800 }
+  { month: "Jan", Electronics: 4000, CleanTech: 2400, Textiles: 2400 },
+  { month: "Feb", Electronics: 4500, CleanTech: 2800, Textiles: 2200 },
+  { month: "Mar", Electronics: 5100, CleanTech: 3500, Textiles: 2800 },
+  { month: "Apr", Electronics: 5800, CleanTech: 4200, Textiles: 3100 },
+  { month: "May", Electronics: 6400, CleanTech: 4900, Textiles: 3900 },
+  { month: "Jun", Electronics: 7200, CleanTech: 5800, Textiles: 4300 },
+  { month: "Jul", Electronics: 8100, CleanTech: 6700, Textiles: 4800 }
 ];
