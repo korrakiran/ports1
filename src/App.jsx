@@ -9,11 +9,13 @@ import NetworkView from './components/NetworkView';
 import AnalyticsView from './components/AnalyticsView';
 import SettingsView from './components/SettingsView';
 import { ExpressInterestModal, SlideInChat } from './components/Modals';
+import { LayoutDashboard, Globe2, Sparkles, Users, Settings } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedOppForModal, setSelectedOppForModal] = useState(null);
   const [activeChatProfile, setActiveChatProfile] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const renderActiveView = () => {
     switch (activeTab) {
@@ -53,10 +55,23 @@ export default function App() {
     }
   };
 
+  const mobileNavItems = [
+    { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
+    { id: 'intelligence', label: 'Intel', icon: Globe2 },
+    { id: 'opportunities', label: 'Deals', icon: Sparkles },
+    { id: 'network', label: 'Network', icon: Users },
+    { id: 'settings', label: 'Settings', icon: Settings }
+  ];
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
-      {/* 1. Minimal Sidebar (5-7 icon-only options with hover tooltips) */}
-      <MinimalSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* 1. Minimal Sidebar (Desktop sticky & Mobile drawer) */}
+      <MinimalSidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
 
       {/* Main Content Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
@@ -71,12 +86,34 @@ export default function App() {
             destination: "Global",
             flag: "🌐"
           })} 
+          onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
 
         {/* 3. Dynamic Page View */}
         <main style={{ flex: 1, overflowY: 'auto' }}>
           {renderActiveView()}
         </main>
+      </div>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="mobile-bottom-nav">
+        {mobileNavItems.map(item => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveTab(item.id);
+                setIsMobileMenuOpen(false);
+              }}
+              className={`mobile-nav-item ${isActive ? 'active' : ''}`}
+            >
+              <Icon size={20} />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Modals & Floating Slide-in Drawers */}

@@ -26,10 +26,10 @@ export default function SettingsView() {
   };
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '900px' }}>
+    <div className="view-container" style={{ maxWidth: '900px' }}>
       
       <div className="card">
-        <div style={{ display: 'flex', gap: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', marginBottom: '20px', overflowX: 'auto' }}>
           <button 
             onClick={() => setActiveTab('profile')}
             style={{

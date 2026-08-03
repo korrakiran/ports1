@@ -30,10 +30,10 @@ export default function OpportunitiesView({ onExpressInterest }) {
   };
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
+    <div className="view-container">
       
       {/* Breadcrumb Navigation */}
-      <div style={{ fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div style={{ fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
         <span>Import Opportunity</span>
         <ChevronRight size={14} />
         <span style={{ color: '#0f172a', fontWeight: 600 }}>
@@ -45,7 +45,7 @@ export default function OpportunitiesView({ onExpressInterest }) {
       </div>
 
       {/* 4-Step Progress Indicator */}
-      <div className="card" style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff' }}>
+      <div className="card" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', overflowX: 'auto', gap: '16px' }}>
         {[
           { step: 1, title: 'Product Details' },
           { step: 2, title: 'Process' },

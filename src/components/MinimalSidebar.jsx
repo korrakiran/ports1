@@ -16,10 +16,11 @@ import {
   TrendingUp,
   DollarSign,
   Search,
-  BookOpen
+  BookOpen,
+  X
 } from 'lucide-react';
 
-export default function MinimalSidebar({ activeTab, setActiveTab }) {
+export default function MinimalSidebar({ activeTab, setActiveTab, isOpen, onClose }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'intelligence', label: 'Market Intelligence', icon: Globe2 },
@@ -33,51 +34,89 @@ export default function MinimalSidebar({ activeTab, setActiveTab }) {
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
+  const handleSelectTab = (id) => {
+    setActiveTab(id === 'export_opp' || id === 'price_intel' || id === 'reports' ? 'opportunities' : id);
+    if (onClose) onClose();
+  };
+
   return (
-    <aside style={{
-      width: '240px',
-      height: '100vh',
-      backgroundColor: '#070b14',
-      borderRight: '1px solid #1e293b',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '20px 16px',
-      position: 'sticky',
-      top: 0,
-      zIndex: 50,
-      flexShrink: 0,
-      color: '#ffffff'
-    }}>
-      {/* Brand Header like PortsAI */}
-      <div 
-        onClick={() => setActiveTab('dashboard')} 
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '32px',
-          paddingLeft: '8px',
-          cursor: 'pointer'
-        }}
-      >
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isOpen && (
+        <div 
+          className="mobile-sidebar-overlay"
+          onClick={onClose}
+        />
+      )}
+
+      <aside className={`sidebar-container ${isOpen ? 'mobile-open' : ''}`} style={{
+        width: '240px',
+        height: '100vh',
+        backgroundColor: '#070b14',
+        borderRight: '1px solid #1e293b',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '20px 16px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        flexShrink: 0,
+        color: '#ffffff',
+        transition: 'transform 0.3s ease'
+      }}>
+        {/* Brand Header */}
         <div style={{
-          width: '36px',
-          height: '36px',
-          borderRadius: '8px',
-          background: 'linear-gradient(135deg, #0066FF 0%, #0044CC 100%)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          color: '#ffffff',
-          fontWeight: 800,
-          boxShadow: '0 4px 12px rgba(0, 102, 255, 0.4)'
+          justifyContent: 'space-between',
+          marginBottom: '32px',
+          paddingLeft: '4px'
         }}>
-          <Globe2 size={20} />
+          <div 
+            onClick={() => handleSelectTab('dashboard')} 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              cursor: 'pointer'
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #0066FF 0%, #0044CC 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              fontWeight: 800,
+              boxShadow: '0 4px 12px rgba(0, 102, 255, 0.4)'
+            }}>
+              <Globe2 size={20} />
+            </div>
+            <div style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff' }}>
+              Ports<span style={{ color: '#0066FF' }}>AI</span>
+            </div>
+          </div>
+
+          {/* Close button for mobile */}
+          {onClose && (
+            <button 
+              onClick={onClose}
+              className="mobile-only"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#94a3b8',
+                cursor: 'pointer',
+                padding: '4px'
+              }}
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
-        <div style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff' }}>
-          Ports<span style={{ color: '#0066FF' }}>AI</span>
-        </div>
-      </div>
 
       {/* Nav List */}
       <div style={{
@@ -94,7 +133,7 @@ export default function MinimalSidebar({ activeTab, setActiveTab }) {
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id === 'export_opp' || item.id === 'price_intel' || item.id === 'reports' ? 'opportunities' : item.id)}
+              onClick={() => handleSelectTab(item.id)}
               style={{
                 width: '100%',
                 height: '42px',
