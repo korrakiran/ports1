@@ -20,15 +20,17 @@ export default function WorldHeroMap() {
 
   // Coordinates of the pins on the SVG map (viewBox="0 0 1010 666")
   // Converted to percentages: X% = (x / 1010) * 100, Y% = (y / 666) * 100
+  // Centroids computed from WorldSVGMap's actual path geometry (viewBox 0 0 1010 666)
+  // by taking the largest-bbox subpath per country (i.e. the mainland, not outlying islands).
   const pins = [
-    { id: 'us', name: 'USA', left: '19.3%', top: '31.5%', size: 7 },
-    { id: 'br', name: 'Brazil', left: '26.7%', top: '77.0%', size: 6 },
-    { id: 'gb', name: 'UK', left: '45.9%', top: '45.2%', size: 5 },
-    { id: 'de', name: 'Germany', left: '49.6%', top: '43.8%', size: 6.5 },
-    { id: 'ae', name: 'UAE', left: '61.5%', top: '57.8%', size: 7 },
-    { id: 'cn', name: 'China', left: '81.6%', top: '49.2%', size: 5.5 },
-    { id: 'jp', name: 'Japan', left: '86.7%', top: '52.4%', size: 5.5 },
-    { id: 'au', name: 'Australia', left: '82.3%', top: '82.5%', size: 7 },
+    { id: 'us', name: 'USA', left: '22.2%', top: '51.4%', size: 7 },
+    { id: 'br', name: 'Brazil', left: '31.4%', top: '74.0%', size: 6 },
+    { id: 'gb', name: 'UK', left: '46.1%', top: '42.3%', size: 5 },
+    { id: 'de', name: 'Germany', left: '49.9%', top: '44.7%', size: 6.5 },
+    { id: 'ae', name: 'UAE', left: '62.2%', top: '59.1%', size: 7 },
+    { id: 'cn', name: 'China', left: '76.5%', top: '52.9%', size: 5.5 },
+    { id: 'jp', name: 'Japan', left: '85.3%', top: '52.9%', size: 5.5 },
+    { id: 'au', name: 'Australia', left: '84.3%', top: '79.7%', size: 7 },
   ];
 
   return (
@@ -204,8 +206,8 @@ export default function WorldHeroMap() {
           {/* Card 1: Germany (Positioned right of DE pin) */}
           <div style={{
             position: 'absolute',
-            top: '38%',
-            left: '52.5%',
+            top: '38.5%',
+            left: '53%',
             backgroundColor: '#ffffff',
             padding: '7px 14px',
             borderRadius: '8px',
@@ -228,8 +230,8 @@ export default function WorldHeroMap() {
           {/* Card 2: United Arab Emirates (Positioned right/above UAE pin) */}
           <div style={{
             position: 'absolute',
-            top: '52%',
-            left: '64.5%',
+            top: '53.5%',
+            left: '65.5%',
             backgroundColor: '#ffffff',
             padding: '7px 14px',
             borderRadius: '8px',
@@ -253,8 +255,8 @@ export default function WorldHeroMap() {
           {/* Card 3: Australia (Positioned left of Australia pin) */}
           <div style={{
             position: 'absolute',
-            top: '76%',
-            left: '70.5%',
+            top: '73%',
+            left: '72.5%',
             backgroundColor: '#ffffff',
             padding: '7px 14px',
             borderRadius: '8px',

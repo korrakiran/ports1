@@ -432,7 +432,7 @@ export default function LandingPage({ onSignUp, onLogin }) {
 
             <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '10px 14px', boxShadow: '0 1px 4px rgba(15,23,42,0.02)' }}>
               <div style={{ fontSize: '22px', fontWeight: 800, color: '#090d16', letterSpacing: '-0.03em' }}>
-                <NumberTicker value={24} prefix="2." suffix="M" />
+                <NumberTicker value={4} prefix="2." suffix="M" />
               </div>
               <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px', fontWeight: 500 }}>trade records</div>
             </div>
