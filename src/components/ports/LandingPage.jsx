@@ -482,7 +482,6 @@ export default function LandingPage({ onSignUp, onLogin }) {
           <span>⚡ <strong>HS 8518.30 (Earbuds):</strong> Global Demand Index: <strong>94.2 (High)</strong></span>
           <span>🇦🇪 <strong>Dubai Jebel Ali Port:</strong> Inbound Clearance: <strong>1.4 Days</strong></span>
           <span>🇺🇸 <strong>US West Coast Route:</strong> $3,420 / FEU <span style={{ color: '#10b981' }}>-1.8%</span></span>
-          <span>🇩🇪 <strong>EU CE Compliance:</strong> 100% Pre-Validated Templates Active</span>
           <span>🌿 <strong>Solar Inverters (CleanTech):</strong> Demand Up <strong>+34.8% YoY</strong></span>
         </div>
       </div>
