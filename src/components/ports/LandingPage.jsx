@@ -270,7 +270,7 @@ export default function LandingPage({ onSignUp, onLogin }) {
         </div>
 
         {/* Navigation Links */}
-        <nav style={{ display: 'flex', gap: '28px', fontSize: '14.5px', fontWeight: 500, color: '#475569' }}>
+        <nav className="desktop-only" style={{ gap: '28px', fontSize: '14.5px', fontWeight: 500, color: '#475569' }}>
           <a href="#hero" style={{ textDecoration: 'none', color: '#090d16', fontWeight: 600 }}>Home</a>
           <a href="#workspace" onClick={() => setActiveTab('intelligence')} style={{ textDecoration: 'none', color: '#475569' }}>Market intelligence</a>
           <a href="#workspace" onClick={() => setActiveTab('import_opp')} style={{ textDecoration: 'none', color: '#475569' }}>Import</a>
