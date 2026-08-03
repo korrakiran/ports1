@@ -436,4 +436,46 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Auth Page Responsive Styles */
+.auth-container {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  background-color: #ffffff;
+}
+
+.auth-left {
+  background-color: #070b14;
+  color: #ffffff;
+  padding: 50px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-right {
+  padding: 60px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 580px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    grid-template-columns: 1fr !important;
+  }
+  .auth-left {
+    padding: 24px 16px !important;
+  }
+  .auth-right {
+    padding: 24px 16px !important;
+  }
+}
+
+
 

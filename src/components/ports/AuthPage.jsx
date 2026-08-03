@@ -18,21 +18,12 @@ export default function AuthPage({ onAuthSuccess, onBackToLanding }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1.35fr', backgroundColor: '#ffffff' }}>
+    <div className="auth-container">
       
       {/* ========================================================================= */}
       {/* Left Dark Navy Branding Sidebar (Matching Screen 2 in img.webp) */}
       {/* ========================================================================= */}
-      <div style={{
-        backgroundColor: '#070b14',
-        color: '#ffffff',
-        padding: '50px 48px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      <div className="auth-left">
         {/* Brand Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={onBackToLanding}>
           <span style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.04em' }}>
@@ -133,15 +124,7 @@ export default function AuthPage({ onAuthSuccess, onBackToLanding }) {
       {/* ========================================================================= */}
       {/* Right Form Card (Matching Screen 2 in img.webp) */}
       {/* ========================================================================= */}
-      <div style={{
-        padding: '70px 80px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        maxWidth: '580px',
-        width: '100%',
-        margin: '0 auto'
-      }}>
+      <div className="auth-right">
         <h2 style={{ fontSize: '30px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em', marginBottom: '6px' }}>
           {isLoginMode ? 'Sign In' : 'Sign Up'}
         </h2>
