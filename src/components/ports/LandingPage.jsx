@@ -457,34 +457,7 @@ export default function LandingPage({ onSignUp, onLogin }) {
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. LIVE GLOBAL TRADE TICKER */}
-      {/* ========================================================================= */}
-      <div style={{
-        backgroundColor: '#070b14',
-        color: '#ffffff',
-        padding: '12px 0',
-        overflow: 'hidden',
-        borderTop: '1px solid #1e293b',
-        borderBottom: '1px solid #1e293b',
-        display: 'flex',
-        alignItems: 'center'
-      }}>
-        <div style={{
-          display: 'flex',
-          gap: '48px',
-          whiteSpace: 'nowrap',
-          fontSize: '13px',
-          fontWeight: 500,
-          animation: 'floatSlow 20s linear infinite',
-          paddingLeft: '56px'
-        }}>
-          <span>🚢 <strong>Shanghai &rarr; Hamburg:</strong> $2,850 / TEU <span style={{ color: '#10b981' }}>+2.1%</span></span>
-          <span>⚡ <strong>HS 8518.30 (Earbuds):</strong> Global Demand Index: <strong>94.2 (High)</strong></span>
-          <span>🇦🇪 <strong>Dubai Jebel Ali Port:</strong> Inbound Clearance: <strong>1.4 Days</strong></span>
-          <span>🇺🇸 <strong>US West Coast Route:</strong> $3,420 / FEU <span style={{ color: '#10b981' }}>-1.8%</span></span>
-          <span>🌿 <strong>Solar Inverters (CleanTech):</strong> Demand Up <strong>+34.8% YoY</strong></span>
-        </div>
-      </div>
+
 
       {/* ========================================================================= */}
       {/* 5. INTEGRATED WORKSPACE APP (Exact 4 Wizard Screens + Enterprise Modules) */}
