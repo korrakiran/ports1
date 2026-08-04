@@ -994,12 +994,12 @@ h1, h2, h3, h4, h5, h6 {
 .ld-hero { padding: var(--ld-9) 0 var(--ld-10); overflow-x: clip; }
 .ld-hero-grid {
   display: grid;
-  grid-template-columns: 4.8fr 7.2fr;
-  gap: var(--ld-6);
+  grid-template-columns: 5.4fr 6.6fr;
+  gap: var(--ld-8);
   align-items: center;
 }
 .ld-hero-copy { display: flex; flex-direction: column; gap: var(--ld-5); }
-.ld-hero h1 { max-width: 14ch; text-wrap: balance; }
+.ld-hero h1 { max-width: 22ch; text-wrap: balance; font-size: clamp(38px, 4vw, 56px); line-height: 1.1; }
 .ld-hero-ctas { display: flex; gap: var(--ld-3); flex-wrap: wrap; }
 .ld-hero-viz {
   position: relative;
