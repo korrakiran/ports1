@@ -990,24 +990,26 @@ h1, h2, h3, h4, h5, h6 {
 .ld-btn--sm { height: 38px; padding: 0 16px; font-size: 13.5px; }
 .ld-btn:focus-visible { outline: 2px solid var(--ld-navy); outline-offset: 2px; }
 
-/* ---------- hero: 7/5, globe bleeds ---------- */
+/* ---------- hero: 5fr 7fr, globe bleeds ---------- */
 .ld-hero { padding: var(--ld-9) 0 var(--ld-10); overflow-x: clip; }
 .ld-hero-grid {
   display: grid;
-  grid-template-columns: 7fr 5fr;
-  gap: var(--ld-8);
+  grid-template-columns: 4.8fr 7.2fr;
+  gap: var(--ld-6);
   align-items: center;
 }
 .ld-hero-copy { display: flex; flex-direction: column; gap: var(--ld-5); }
-.ld-hero h1 { max-width: 13ch; text-wrap: balance; }
+.ld-hero h1 { max-width: 14ch; text-wrap: balance; }
 .ld-hero-ctas { display: flex; gap: var(--ld-3); flex-wrap: wrap; }
 .ld-hero-viz {
   position: relative;
-  margin-right: -40px;            /* bleeds past the container, per brief */
+  margin-right: -60px;
+  width: calc(100% + 60px);
   border: 1px solid var(--ld-rule);
   border-radius: var(--ld-r-surface);
   background: var(--ld-surface);
-  overflow: hidden;
+  overflow: visible;
+  box-shadow: 0 16px 40px -12px rgba(15, 23, 42, 0.06);
 }
 
 /* ---------- pipeline: sticky left, advancing right ---------- */
