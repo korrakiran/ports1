@@ -53,6 +53,6 @@
     "@types/react-dom": "^19.2.4",
     "concurrently": "^10.0.4",
     "tsx": "^4.23.5",
-    "typescript": "^7.0.2"
+    "typescript": "^5.9.3"
   }
 }
