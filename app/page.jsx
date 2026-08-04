@@ -1,29 +1,23 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import LandingPage from '@/components/ports/LandingPage';
-import AuthPage from '@/components/ports/AuthPage';
+import { useAuth } from '@/lib/auth-context';
 
 export default function MainPage() {
-  const [currentScreen, setCurrentScreen] = React.useState('landing');
+  const router = useRouter();
+  const { user } = useAuth();
 
-  if (currentScreen === 'auth') {
-    return (
-      <AuthPage 
-        onAuthSuccess={() => setCurrentScreen('landing')}
-        onBackToLanding={() => setCurrentScreen('landing')}
-      />
-    );
-  }
+  // "Analyze My Product" goes straight to the form when already signed in,
+  // and via signup when not.
+  const startAnalysis = () => router.push(user ? '/analyze' : '/signup');
 
   return (
-    <LandingPage 
-      onGetStarted={() => {
-        const el = document.getElementById('import-wizard');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }}
-      onSignUp={() => setCurrentScreen('auth')}
-      onLogin={() => setCurrentScreen('auth')}
+    <LandingPage
+      onGetStarted={startAnalysis}
+      onSignUp={startAnalysis}
+      onLogin={() => router.push('/login')}
     />
   );
 }

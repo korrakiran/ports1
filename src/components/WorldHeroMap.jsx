@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Interactive3DGlobe from './Interactive3DGlobe';
+import Interactive3DGlobe from './globe/Interactive3DGlobe';
 import WorldSVGMap from './WorldSVGMap';
 
 /**

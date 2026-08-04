@@ -1,8 +1,9 @@
 import './globals.css';
+import { AuthProvider } from '@/lib/auth-context';
 
 export const metadata = {
-  title: 'MSME Global Trade Marketplace | Cross-Border Intelligence & Discovery',
-  description: 'Modern intuitive platform enabling MSMEs to discover, analyze, and execute import-export opportunities globally.'
+  title: 'PortsAI | Find the export markets ready for your product',
+  description: 'PortsAI analyzes your product and helps Indian MSMEs find the export markets worth pursuing, with certification and export readiness guidance.'
 };
 
 export default function RootLayout({ children }) {
@@ -15,7 +16,7 @@ export default function RootLayout({ children }) {
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossOrigin="" />
       </head>
       <body>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
