@@ -1,360 +1,600 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
-  UploadCloud,
-  Sparkles,
-  Compass,
-  Globe2,
-  Package,
-  FileCheck,
-  Bot,
-  ShieldCheck,
-  Search,
-  CheckCircle2,
-  Users,
-  Building,
-  TrendingUp,
+  Check,
+  ImagePlus,
   Plus,
-  X
+  Eye,
+  Package,
+  Globe2,
+  FileCheck,
+  ChevronDown
 } from 'lucide-react';
 import WorldHeroMap from '../WorldHeroMap';
+import WorldSVGMap from '../WorldSVGMap';
+import { useAuth } from '@/lib/auth-context';
 
-const HOW_IT_WORKS = [
+/* ------------------------------------------------------------------ */
+/* Content                                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The five pipeline steps. Numbered because the process genuinely is ordered —
+ * the markers encode sequence, they are not decoration.
+ */
+const PIPELINE = [
   {
-    icon: UploadCloud,
+    id: 'upload',
+    num: '001',
     title: 'Upload your product',
-    desc: 'Add a photo, a short description, or a spec sheet. That’s all we need to get started — no lengthy forms.'
+    desc: 'A photo and a line of description is enough. No forms to fill in.',
+    icon: ImagePlus
   },
   {
-    icon: Sparkles,
-    title: 'AI understands your product',
-    desc: 'We identify what your product is, how it’s classified, and what similar products typically need to enter a new market.'
+    id: 'vision',
+    num: '002',
+    title: 'AI reads the image',
+    desc: 'A vision model identifies what the product is and what it is made of.',
+    icon: Eye
   },
   {
-    icon: Compass,
-    title: 'Get recommendations and export guidance',
-    desc: 'Receive a ranked list of markets worth pursuing, along with the certifications, documents, and next steps to get there.'
+    id: 'understand',
+    num: '003',
+    title: 'Product understood',
+    desc: 'You see exactly what was detected before anything is matched.',
+    icon: Package
+  },
+  {
+    id: 'markets',
+    num: '004',
+    title: 'Markets matched',
+    desc: 'Every recommended market shows the entry it matched on.',
+    icon: Globe2
+  },
+  {
+    id: 'readiness',
+    num: '005',
+    title: 'Export readiness',
+    desc: 'The certifications and documents each market expects, and what to do next.',
+    icon: FileCheck
   }
-];
-
-const RECEIVE_ITEMS = [
-  {
-    icon: Globe2,
-    title: 'Recommended markets',
-    desc: 'Country-level suggestions based on your product’s category, characteristics, and where similar products tend to find demand.'
-  },
-  {
-    icon: Package,
-    title: 'Product understanding',
-    desc: 'A clear breakdown of what you’ve built — how it’s classified, and how it compares to products already sold abroad.'
-  },
-  {
-    icon: FileCheck,
-    title: 'Export readiness guidance',
-    desc: 'The certifications, documentation, and compliance steps you’ll typically need before you can ship to a given market.'
-  },
-  {
-    icon: Bot,
-    title: 'AI assistant',
-    desc: 'Ask follow-up questions about your product, a target market, or the export process, and get answers grounded in your analysis.'
-  }
-];
-
-const MSME_POINTS = [
-  { icon: Search, text: 'Limited access to international market research or trade consultants' },
-  { icon: Compass, text: 'Uncertainty about which countries actually want their product' },
-  { icon: FileCheck, text: 'Scattered, confusing certification and compliance requirements' }
 ];
 
 const PRINCIPLES = [
   {
-    icon: ShieldCheck,
     title: 'Transparent',
-    desc: 'We show you what informed a recommendation and where the analysis has limits — not a score with no explanation behind it.'
+    body: 'Every market we suggest shows the dataset entry it came from. When the analysis has limits, we say so on the page rather than hiding it behind a score.'
   },
   {
-    icon: Search,
     title: 'Explainable',
-    desc: 'Every market suggestion comes with reasoning in plain language, so you understand why, not just what.'
+    body: 'Recommendations arrive with reasoning in plain language. You should understand why a market is on your list, not just that it is.'
   },
   {
-    icon: CheckCircle2,
     title: 'Practical',
-    desc: 'Guidance is meant to be acted on — concrete next steps, not another report you have to interpret yourself.'
+    body: 'Guidance is written to be acted on — the next concrete step, not another report you have to interpret before you can use it.'
   }
 ];
 
 const FAQS = [
   {
     q: 'How does PortsAI find export markets for my product?',
-    a: 'We analyze what you upload — a photo, description, or spec sheet — to understand your product, then match its category and characteristics against known demand patterns across markets. You get a ranked, explained shortlist, not a black-box score.'
+    a: 'You upload a photo and a short description. A vision model reads the image to identify the product and its material, and that is combined with your description and matched against our trade dataset. You get a shortlist where every market shows what it matched on.'
   },
   {
     q: 'Is PortsAI fully built yet?',
-    a: 'We’re in early access. Product analysis and market recommendations are live today. Features like in-app document generation and end-to-end logistics support are still being built and will roll out over time.'
+    a: 'No. We are in early access. Product analysis, market matching and export guidance work today. The trade data behind recommendations is currently a prototype dataset built for demonstration — it is clearly labelled as such everywhere it appears, and is being replaced with production trade data.'
   },
   {
-    q: 'What data do you need from me?',
-    a: 'A photo or description of your product and the country you’re exporting from is enough to start. More detail — spec sheets, existing certifications — helps us give sharper recommendations.'
+    q: 'Do you show demand figures or tariff rates?',
+    a: 'No, and deliberately. We do not have verified figures, so we do not print any. Demand and market type are expressed as qualitative labels — Very High, Growing, Premium Market — rather than percentages or values we cannot stand behind.'
   },
   {
-    q: 'Which markets do you cover?',
-    a: 'We evaluate markets globally and prioritize the ones with the best fit for your specific product, rather than working off a fixed list of countries.'
+    q: 'What do you need from me?',
+    a: 'A photo of your product and a line describing it. A product URL or catalogue helps sharpen the match, but neither is required.'
   },
   {
-    q: 'Do you handle logistics, customs, or payments?',
-    a: 'Not yet. PortsAI currently focuses on market and product intelligence — telling you where to sell and what it takes to get there. Logistics and fulfillment support is on our roadmap.'
+    q: 'Do you handle logistics, customs or payments?',
+    a: 'Not yet. PortsAI currently covers market and product intelligence — where to sell and what it takes to get there. Logistics and buyer connections are on the roadmap, not in the product.'
   },
   {
     q: 'What does it cost?',
-    a: 'We’re still finalizing pricing. Sign up to get access, and we’ll be upfront about any changes before they affect you.'
+    a: 'Pricing is not finalised. Early access is free, and we will be upfront about any change before it affects you.'
   }
 ];
 
-function FaqItem({ item, isOpen, onToggle }) {
+/* ------------------------------------------------------------------ */
+/* Motion — 12px rise, plays once                                      */
+/* ------------------------------------------------------------------ */
+
+function useReveal() {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in');
+          io.unobserve(entry.target); // once
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return ref;
+}
+
+function Reveal({ children, style }) {
+  const ref = useReveal();
   return (
-    <div style={{ borderBottom: '1px solid #e2e8f0' }}>
+    <div ref={ref} className="ld-reveal" style={style}>
+      {children}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Product surfaces — real UI, qualitative labels only                 */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Demand ramp for the example markets.
+ *
+ * A single navy hue stepped by value — not four different colours. The ordering
+ * still reads, but the page keeps one accent. These are qualitative labels;
+ * no number is ever attached to them.
+ */
+const DEMAND = {
+  'Very High': 'var(--ld-map-4)',
+  High: 'var(--ld-map-3)',
+  Medium: 'var(--ld-map-2)',
+  Growing: 'var(--ld-map-1)'
+};
+
+const EXAMPLE_MARKETS = [
+  { country: 'Germany', demand: 'Very High', type: 'Premium Market' },
+  { country: 'United States', demand: 'High', type: 'Premium Market' },
+  { country: 'United Arab Emirates', demand: 'High', type: 'Re-export Hub' },
+  { country: 'Japan', demand: 'Medium', type: 'Premium Market' },
+  { country: 'Australia', demand: 'Growing', type: 'Volume Market' }
+];
+
+function StageUpload() {
+  return (
+    <>
+      <div className="ld-drop">
+        <ImagePlus size={22} color="var(--ld-faint)" />
+        <span style={{ fontSize: 14.5, color: 'var(--ld-ink)' }}>Drag a product photo here</span>
+        <span className="ld-small">JPG, PNG or WebP</span>
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <span className="ld-chip">wallet-front.jpg</span>
+        <span className="ld-chip">wallet-detail.jpg</span>
+      </div>
+      <p className="ld-small">A photo and one line of description is the whole input.</p>
+    </>
+  );
+}
+
+function StageVision() {
+  return (
+    <>
+      <div className="ld-surface">
+        <div className="ld-surface-head">
+          <span className="ld-label">What we saw in your images</span>
+          <span className="ld-chip ld-chip--mono">vision</span>
+        </div>
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <span style={{ fontSize: 20, letterSpacing: '-0.02em', color: 'var(--ld-ink)' }}>
+            Leather wallet.
+          </span>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['leather', 'wallet', 'accessory', 'handmade', 'fashion'].map((t) => (
+              <span key={t} className="ld-chip">{t}</span>
+            ))}
+          </div>
+          <span className="ld-mono-note">read by llama-3.2-90b-vision</span>
+        </div>
+      </div>
+      <p className="ld-small">
+        The model returns what it can see. Nothing is inferred beyond the image.
+      </p>
+    </>
+  );
+}
+
+function StageUnderstand() {
+  return (
+    <>
+      <div className="ld-surface">
+        <div className="ld-surface-head">
+          <span className="ld-label">How your product was understood</span>
+        </div>
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <span className="ld-chip">Category · Fashion</span>
+            <span className="ld-chip">Handmade Leather Wallet</span>
+          </div>
+          <div style={{ borderTop: '1px solid var(--ld-rule-soft)', paddingTop: 12 }}>
+            <span className="ld-label">Matched on</span>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+              {['leather', 'wallet', 'handmade'].map((t) => (
+                <span key={t} className="ld-chip">{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <p className="ld-small">
+        You see the interpretation before the recommendation, so you can correct it.
+      </p>
+    </>
+  );
+}
+
+function StageMarkets() {
+  return (
+    <>
+      <div className="ld-surface">
+        <div className="ld-surface-head">
+          <span className="ld-label">Recommended markets</span>
+          <span className="ld-chip ld-chip--mono">12 matched</span>
+        </div>
+        <div>
+          {EXAMPLE_MARKETS.map((m) => (
+            <div key={m.country} className="ld-market-row">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                <span className="ld-dot" style={{ background: DEMAND[m.demand] }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 14.5, color: 'var(--ld-ink)', letterSpacing: '-0.01em' }}>
+                    {m.country}
+                  </div>
+                  <div className="ld-mono-note" style={{ marginTop: 2 }}>
+                    matched on Handmade Leather Wallet
+                  </div>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <div style={{ fontSize: 13, color: DEMAND[m.demand] }}>{m.demand} demand</div>
+                <div className="ld-small" style={{ fontSize: 12 }}>{m.type}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <p className="ld-small">
+        Every row carries its receipt. A market appears only because an entry matched.
+      </p>
+    </>
+  );
+}
+
+function StageReadiness() {
+  return (
+    <>
+      <div className="ld-surface">
+        <div className="ld-surface-head">
+          <span className="ld-label">Export readiness · Germany</span>
+        </div>
+        <div style={{ padding: '4px 16px 12px' }}>
+          {[
+            'Confirm your HS classification with a customs broker before quoting.',
+            'Prepare a specification sheet — materials, dimensions, packaging.',
+            'Check destination certification early; testing is the longest lead item.',
+            'Register for an Importer Exporter Code (IEC) if you do not hold one.',
+            'Ask two or three freight forwarders for indicative routing.'
+          ].map((t) => (
+            <div key={t} className="ld-check">
+              <Check size={15} color="var(--ld-faint)" style={{ flexShrink: 0, marginTop: 2 }} />
+              <span style={{ color: 'var(--ld-body-c)' }}>{t}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <p className="ld-small">
+        Guidance is practical and general. Anything we cannot verify, we say we cannot verify.
+      </p>
+    </>
+  );
+}
+
+const STAGES = {
+  upload: StageUpload,
+  vision: StageVision,
+  understand: StageUnderstand,
+  markets: StageMarkets,
+  readiness: StageReadiness
+};
+
+/* ------------------------------------------------------------------ */
+/* Profile menu                                                        */
+/* ------------------------------------------------------------------ */
+
+/** "Kiran Korra" -> "KK"; "Kiran" -> "K". Falls back to the email's first letter. */
+function initialsFrom(name, email) {
+  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return (email?.[0] ?? '?').toUpperCase();
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function ProfileMenu({ user, onLogout }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const router = useRouter();
+
+  // Close on outside click or Escape — a menu that traps the user is a bug.
+  useEffect(() => {
+    if (!open) return;
+
+    const onPointerDown = (e) => {
+      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    };
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  const go = (href) => {
+    setOpen(false);
+    router.push(href);
+  };
+
+  const firstName = (user.name ?? '').trim().split(/\s+/)[0] || 'Account';
+
+  return (
+    <div className="ld-profile-wrap" ref={wrapRef}>
       <button
-        onClick={onToggle}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-          padding: '22px 4px',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          textAlign: 'left',
-          font: 'inherit'
-        }}
+        className="ld-profile"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
       >
-        <span style={{ fontSize: '16px', fontWeight: 700, color: '#090d16' }}>{item.q}</span>
-        <span style={{
-          flexShrink: 0,
-          width: '28px',
-          height: '28px',
-          borderRadius: '50%',
-          backgroundColor: '#f1f5f9',
-          color: '#0066FF',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          {isOpen ? <X size={14} /> : <Plus size={14} />}
+        <span className="ld-avatar" aria-hidden="true">
+          {initialsFrom(user.name, user.email)}
         </span>
+        <span className="ld-profile-name">{firstName}</span>
+        <ChevronDown size={14} className="ld-profile-chev" />
       </button>
-      {isOpen && (
-        <p style={{ fontSize: '14.5px', color: '#475569', lineHeight: 1.7, paddingBottom: '22px', paddingRight: '40px' }}>
-          {item.a}
-        </p>
+
+      {open && (
+        <div className="ld-menu" role="menu">
+          <div className="ld-menu-head">
+            <span className="ld-label">Signed in as</span>
+            <div className="ld-menu-name">{user.name}</div>
+            <div className="ld-menu-email" title={user.email}>{user.email}</div>
+          </div>
+
+          <div className="ld-menu-divider" />
+
+          <button className="ld-menu-item" role="menuitem" onClick={() => go('/analyze')}>
+            Analyze Product
+          </button>
+          <button className="ld-menu-item" role="menuitem" onClick={() => go('/account')}>
+            My Analyses
+          </button>
+          {/* Settings has no screen yet — shown, but honestly marked rather than
+              linking somewhere that does not exist. */}
+          <span className="ld-menu-item" role="menuitem" aria-disabled="true">
+            Settings <span className="ld-menu-soon">soon</span>
+          </span>
+
+          <div className="ld-menu-divider" />
+
+          <button
+            className="ld-menu-item"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              onLogout();
+            }}
+          >
+            Sign out
+          </button>
+        </div>
       )}
     </div>
   );
 }
 
-export default function LandingPage({ onSignUp, onLogin }) {
-  const [openFaq, setOpenFaq] = useState(0);
+/* ------------------------------------------------------------------ */
+/* FAQ                                                                 */
+/* ------------------------------------------------------------------ */
 
-  const scrollTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
+function FaqItem({ item, isOpen, onToggle }) {
+  return (
+    <div className="ld-faq-item">
+      <button className="ld-faq-q" onClick={onToggle} aria-expanded={isOpen}>
+        <span>{item.q}</span>
+        <Plus size={16} className="ld-faq-sign" />
+      </button>
+      {isOpen && <p className="ld-faq-a">{item.a}</p>}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
+
+export default function LandingPage({ onSignUp, onLogin }) {
+  const [activeStep, setActiveStep] = useState(0);
+  const [openFaq, setOpenFaq] = useState(0);
+  const panelRefs = useRef([]);
+  const { user, loading, logout } = useAuth();
+
+  // Advance the sticky rail as the right-hand panels pass through the viewport.
+  useEffect(() => {
+    const panels = panelRefs.current.filter(Boolean);
+    if (panels.length === 0) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            const i = panels.indexOf(e.target);
+            if (i !== -1) setActiveStep(i);
+          }
+        });
+      },
+      { rootMargin: '-45% 0px -45% 0px', threshold: 0 }
+    );
+
+    panels.forEach((p) => io.observe(p));
+    return () => io.disconnect();
+  }, []);
+
+  const scrollTo = (id) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', color: '#090d16' }}>
+    <div className="ld">
+      {/* ================= NAV ================= */}
+      <header className="ld-nav">
+        <div className="ld-nav-inner">
+          <button
+            className="ld-wordmark"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            Ports<span>AI</span>
+          </button>
 
-      {/* NAVBAR */}
-      <header style={{
-        height: '76px',
-        padding: '0 48px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderBottom: '1px solid #f1f5f9',
-        backgroundColor: 'rgba(255,255,255,0.9)',
-        backdropFilter: 'blur(10px)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.03em', color: '#090d16' }}>
-            Ports<span style={{ color: '#0066FF' }}>AI</span>
-          </span>
-        </div>
+          <nav className="ld-nav-links">
+            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollTo('how-it-works'); }}>How it works</a>
+            <a href="#inside" onClick={(e) => { e.preventDefault(); scrollTo('inside'); }}>What you get</a>
+            <a href="#principles" onClick={(e) => { e.preventDefault(); scrollTo('principles'); }}>Principles</a>
+            <a href="#faq" onClick={(e) => { e.preventDefault(); scrollTo('faq'); }}>FAQ</a>
+          </nav>
 
-        <nav className="desktop-only" style={{ gap: '32px', fontSize: '14.5px', fontWeight: 600, color: '#475569' }}>
-          <a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollTo('how-it-works'); }} style={{ textDecoration: 'none', color: '#475569' }}>How it works</a>
-          <a href="#what-you-receive" onClick={(e) => { e.preventDefault(); scrollTo('what-you-receive'); }} style={{ textDecoration: 'none', color: '#475569' }}>What you get</a>
-          <a href="#principles" onClick={(e) => { e.preventDefault(); scrollTo('principles'); }} style={{ textDecoration: 'none', color: '#475569' }}>Principles</a>
-          <a href="#faq" onClick={(e) => { e.preventDefault(); scrollTo('faq'); }} style={{ textDecoration: 'none', color: '#475569' }}>FAQ</a>
-        </nav>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={onLogin} className="btn btn-secondary">Log in</button>
-          <button onClick={onSignUp} className="btn btn-primary">Analyze My Product</button>
+          <div className="ld-nav-actions">
+            {/* While the session check is in flight, render neither state — a
+                "Log in" button that flips to a profile chip reads as a glitch. */}
+            {loading ? (
+              <div className="ld-nav-placeholder" style={{ width: 232, height: 38 }} aria-hidden="true" />
+            ) : user ? (
+              <>
+                <button className="ld-btn ld-btn--primary ld-btn--sm" onClick={onSignUp}>
+                  Analyze My Product
+                </button>
+                <ProfileMenu user={user} onLogout={logout} />
+              </>
+            ) : (
+              <>
+                <button className="ld-btn ld-btn--ghost ld-btn--sm" onClick={onLogin}>Log in</button>
+                <button className="ld-btn ld-btn--primary ld-btn--sm" onClick={onSignUp}>
+                  Analyze My Product
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* HERO */}
-      <section id="hero" style={{ padding: '80px 48px 100px', maxWidth: '1380px', margin: '0 auto' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '480px 1fr',
-          gap: '56px',
-          alignItems: 'center'
-        }}>
-        <div>
-          <span className="badge badge-blue">Early access</span>
-          <h1 style={{ fontSize: '48px', fontWeight: 800, lineHeight: 1.12, letterSpacing: '-0.035em', marginTop: '20px' }}>
-            Find the export markets ready for your product.
-          </h1>
-          <p style={{ fontSize: '16.5px', color: '#475569', lineHeight: 1.7, marginTop: '20px', maxWidth: '440px' }}>
-            Upload your product and PortsAI tells you which markets are worth pursuing, why, and what it takes to get there — certifications, documentation, and next steps included.
-          </p>
+      {/* ================= HERO — 7/5, globe bleeds ================= */}
+      <section id="hero" className="ld-hero">
+        <div className="ld-shell">
+          <div className="ld-hero-grid">
+            <div className="ld-hero-copy">
+              <span className="ld-label">001 &nbsp;/&nbsp; Early access</span>
 
-          <div style={{ display: 'flex', gap: '14px', marginTop: '32px', flexWrap: 'wrap' }} className="hero-banner-buttons">
-            <button onClick={onSignUp} className="btn btn-primary" style={{ padding: '13px 24px', fontSize: '15px' }}>
-              Analyze My Product <ArrowRight size={16} />
-            </button>
-            <button onClick={() => scrollTo('how-it-works')} className="btn btn-outline" style={{ padding: '13px 24px', fontSize: '15px' }}>
-              See How It Works
-            </button>
-          </div>
+              <h1 className="ld-display-xl">
+                Find the export markets ready for your product.
+              </h1>
 
-          <p style={{ fontSize: '12.5px', color: '#94a3b8', marginTop: '14px' }}>
-            Takes about two minutes. No sales calls required.
-          </p>
-        </div>
+              <p className="ld-lead">
+                Upload a photo. PortsAI reads your product, matches it against trade data, and
+                shows you which markets are worth pursuing — and what each one asks for.
+              </p>
 
-        <div style={{
-          position: 'relative',
-          backgroundColor: '#f3f6fb',
-          borderRadius: '24px',
-          padding: '24px',
-          border: '1px solid #e9f0f8'
-        }}>
-          <WorldHeroMap />
-        </div>
-        </div>
-      </section>
+              <div className="ld-hero-ctas">
+                <button className="ld-btn ld-btn--primary" onClick={onSignUp}>
+                  Analyze My Product <ArrowRight size={16} />
+                </button>
+                <button
+                  className="ld-btn ld-btn--ghost"
+                  onClick={() => scrollTo('how-it-works')}
+                >
+                  See how it works
+                </button>
+              </div>
 
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" style={{ padding: '90px 48px', backgroundColor: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
-        <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', maxWidth: '620px', margin: '0 auto 56px' }}>
-            <span className="badge badge-blue">How it works</span>
-            <h2 style={{ fontSize: '34px', fontWeight: 800, letterSpacing: '-0.03em', marginTop: '16px' }}>
-              From product to export plan in three steps
-            </h2>
-          </div>
+              <span className="ld-mono-note">
+                two minutes · no sales calls · built for Indian MSMEs
+              </span>
+            </div>
 
-          <div className="grid-3" style={{ gap: '28px' }}>
-            {HOW_IT_WORKS.map((step, idx) => {
-              const Icon = step.icon;
-              return (
-                <div key={step.title} style={{
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '18px',
-                  padding: '32px 28px',
-                  boxShadow: '0 1px 3px rgba(15,23,42,0.03)'
-                }}>
-                  <div style={{
-                    width: '46px',
-                    height: '46px',
-                    borderRadius: '12px',
-                    backgroundColor: '#eff6ff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '18px'
-                  }}>
-                    <Icon size={22} color="#0066FF" />
-                  </div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#0066FF', marginBottom: '6px' }}>STEP {idx + 1}</div>
-                  <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px' }}>{step.title}</h3>
-                  <p style={{ fontSize: '14.5px', color: '#64748b', lineHeight: 1.65 }}>{step.desc}</p>
-                </div>
-              );
-            })}
+            <div className="ld-hero-viz">
+              <WorldHeroMap />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* WHAT YOU'LL RECEIVE */}
-      <section id="what-you-receive" style={{ padding: '90px 48px' }}>
-        <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', maxWidth: '620px', margin: '0 auto 56px' }}>
-            <span className="badge badge-blue">What you'll receive</span>
-            <h2 style={{ fontSize: '34px', fontWeight: 800, letterSpacing: '-0.03em', marginTop: '16px' }}>
-              A clear, complete picture of your export path
-            </h2>
-          </div>
+      {/* ================= PIPELINE — sticky rail, advancing stage ================= */}
+      <section id="how-it-works" className="ld-section ld-section--rule">
+        <div className="ld-shell">
+          <div className="ld-pipe-grid">
+            <div className="ld-pipe-rail">
+              <span className="ld-label">How it works</span>
+              <h2 className="ld-title">
+                From a photograph to a shortlist you can act on.
+              </h2>
+              <p className="ld-copy" style={{ fontSize: 15 }}>
+                Five steps, in order. Each one shows its working, so nothing arrives without
+                an explanation attached.
+              </p>
 
-          <div className="grid-4" style={{ gap: '20px' }}>
-            {RECEIVE_ITEMS.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.title} style={{
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '16px',
-                  padding: '26px 22px',
-                  backgroundColor: '#ffffff'
-                }}>
-                  <Icon size={22} color="#0066FF" style={{ marginBottom: '14px' }} />
-                  <h3 style={{ fontSize: '15.5px', fontWeight: 800, marginBottom: '8px' }}>{item.title}</h3>
-                  <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.6 }}>{item.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+              <div className="ld-steps">
+                {PIPELINE.map((step, i) => (
+                  <button
+                    key={step.id}
+                    className="ld-step"
+                    aria-current={activeStep === i}
+                    onClick={() =>
+                      panelRefs.current[i]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    }
+                  >
+                    <span className="ld-step-num">{step.num}</span>
+                    <span>
+                      <span className="ld-step-title">{step.title}</span>
+                      {activeStep === i && <span className="ld-step-desc">{step.desc}</span>}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      {/* BUILT FOR INDIAN MSMEs */}
-      <section id="msme" style={{ padding: '90px 48px', backgroundColor: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
-        <div style={{ maxWidth: '1180px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '56px', alignItems: 'center' }}>
-          <div>
-            <span className="badge badge-blue">Built for Indian MSMEs</span>
-            <h2 style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-0.03em', marginTop: '16px', lineHeight: 1.25 }}>
-              Export expertise that isn't locked behind a consultant's fee
-            </h2>
-            <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.75, marginTop: '18px' }}>
-              India has thousands of manufacturers making products that are ready for international buyers. What most of them lack isn't quality — it's access to the market research, compliance knowledge, and guidance that larger exporters take for granted. PortsAI puts that in reach directly, without an expensive intermediary.
-            </p>
-          </div>
-
-          <div style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #e2e8f0',
-            borderRadius: '18px',
-            padding: '32px'
-          }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '20px' }}>
-              Common challenges we address
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              {MSME_POINTS.map((point) => {
-                const Icon = point.icon;
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ld-5)' }}>
+              {PIPELINE.map((step, i) => {
+                const Stage = STAGES[step.id];
                 return (
-                  <div key={point.text} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                    <div style={{
-                      width: '34px',
-                      height: '34px',
-                      borderRadius: '9px',
-                      backgroundColor: '#eff6ff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      <Icon size={16} color="#0066FF" />
+                  <div
+                    key={step.id}
+                    ref={(el) => (panelRefs.current[i] = el)}
+                    className="ld-stage"
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <step.icon size={16} color="var(--ld-faint)" />
+                      <span className="ld-label">{step.num}</span>
+                      <span className="ld-label">{step.title}</span>
                     </div>
-                    <p style={{ fontSize: '14.5px', color: '#334155', lineHeight: 1.6, paddingTop: '6px' }}>{point.text}</p>
+                    <Stage />
                   </div>
                 );
               })}
@@ -363,86 +603,199 @@ export default function LandingPage({ onSignUp, onLogin }) {
         </div>
       </section>
 
-      {/* OUR PRINCIPLES */}
-      <section id="principles" style={{ padding: '90px 48px' }}>
-        <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', maxWidth: '620px', margin: '0 auto 56px' }}>
-            <span className="badge badge-blue">Our principles</span>
-            <h2 style={{ fontSize: '34px', fontWeight: 800, letterSpacing: '-0.03em', marginTop: '16px' }}>
-              How we approach every recommendation
+      {/* ================= PRODUCT PREVIEW ================= */}
+      <section id="inside" className="ld-section ld-section--tint">
+        <div className="ld-shell">
+          <Reveal>
+            <span className="ld-label">002 &nbsp;/&nbsp; Inside the product</span>
+            <h2 className="ld-display" style={{ marginTop: 16, maxWidth: '18ch' }}>
+              One analysis, everything it found.
             </h2>
-          </div>
+            <p className="ld-copy" style={{ marginTop: 16 }}>
+              This is the actual result surface — the interpretation, the markets, and the map,
+              on one page.
+            </p>
+          </Reveal>
 
-          <div className="grid-3" style={{ gap: '28px' }}>
-            {PRINCIPLES.map((p) => {
-              const Icon = p.icon;
-              return (
-                <div key={p.title} style={{ textAlign: 'center', padding: '8px 12px' }}>
-                  <div style={{
-                    width: '52px',
-                    height: '52px',
-                    borderRadius: '14px',
-                    backgroundColor: '#eff6ff',
+          <Reveal style={{ marginTop: 48 }}>
+            <div
+              className="ld-surface"
+              style={{ borderRadius: 'var(--ld-r-surface)', overflow: 'hidden' }}
+            >
+              <div className="ld-surface-head" style={{ background: 'var(--ld-surface)' }}>
+                <span className="ld-label">Analysis · Handmade leather wallet</span>
+                <span className="ld-chip ld-chip--mono">example</span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', minHeight: 380 }}>
+                <aside
+                  style={{
+                    borderRight: '1px solid var(--ld-rule-soft)',
+                    padding: 20,
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 18px'
-                  }}>
-                    <Icon size={24} color="#0066FF" />
+                    flexDirection: 'column',
+                    gap: 18,
+                    background: 'var(--ld-surface)'
+                  }}
+                >
+                  <div>
+                    <span className="ld-label">Detected</span>
+                    <p style={{ fontSize: 15, color: 'var(--ld-ink)', marginTop: 6, letterSpacing: '-0.015em' }}>
+                      Leather wallet
+                    </p>
                   </div>
-                  <h3 style={{ fontSize: '17px', fontWeight: 800, marginBottom: '10px' }}>{p.title}</h3>
-                  <p style={{ fontSize: '14.5px', color: '#64748b', lineHeight: 1.7 }}>{p.desc}</p>
+                  <div>
+                    <span className="ld-label">Materials</span>
+                    <p style={{ fontSize: 14, color: 'var(--ld-body-c)', marginTop: 6 }}>leather · handmade</p>
+                  </div>
+                  <div>
+                    <span className="ld-label">Category</span>
+                    <p style={{ fontSize: 14, color: 'var(--ld-body-c)', marginTop: 6 }}>Fashion</p>
+                  </div>
+                  <div>
+                    <span className="ld-label">Match</span>
+                    <p style={{ fontSize: 14, color: 'var(--ld-navy-ink)', marginTop: 6 }}>Strong</p>
+                  </div>
+                </aside>
+
+                <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16, background: '#fff' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                    {EXAMPLE_MARKETS.slice(0, 3).map((m) => (
+                      <div
+                        key={m.country}
+                        style={{
+                          border: '1px solid var(--ld-rule)',
+                          borderRadius: 'var(--ld-r-card)',
+                          padding: 14
+                        }}
+                      >
+                        <div style={{ fontSize: 14.5, color: 'var(--ld-ink)', letterSpacing: '-0.01em' }}>
+                          {m.country}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                          <span className="ld-dot" style={{ background: DEMAND[m.demand] }} />
+                          <span style={{ fontSize: 12.5, color: DEMAND[m.demand] }}>{m.demand}</span>
+                        </div>
+                        <div className="ld-small" style={{ fontSize: 12, marginTop: 4 }}>{m.type}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div
+                    style={{
+                      border: '1px solid var(--ld-rule)',
+                      borderRadius: 'var(--ld-r-card)',
+                      padding: 12,
+                      flex: 1,
+                      minHeight: 180,
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <style>{`
+                      .ld-mini-map path { fill: var(--ld-map-0); stroke: var(--ld-surface); stroke-width: 0.5; }
+                      .ld-mini-map path#de, .ld-mini-map path#us { fill: var(--ld-map-4); }
+                      .ld-mini-map path#ae, .ld-mini-map path#jp { fill: var(--ld-map-3); }
+                      .ld-mini-map path#au { fill: var(--ld-map-1); }
+                    `}</style>
+                    <WorldSVGMap className="ld-mini-map" style={{ width: '100%', height: 'auto' }} />
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal style={{ marginTop: 16 }}>
+            <p className="ld-mono-note">
+              example output · demand shown as qualitative labels, never invented figures
+            </p>
+          </Reveal>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" style={{ padding: '90px 48px', backgroundColor: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
-        <div style={{ maxWidth: '760px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '44px' }}>
-            <span className="badge badge-blue">FAQ</span>
-            <h2 style={{ fontSize: '34px', fontWeight: 800, letterSpacing: '-0.03em', marginTop: '16px' }}>
-              Common questions
+      {/* ================= PRINCIPLES ================= */}
+      <section id="principles" className="ld-section">
+        <div className="ld-shell">
+          <Reveal>
+            <span className="ld-label">Principles</span>
+            <h2 className="ld-display" style={{ marginTop: 16, maxWidth: '20ch' }}>
+              An export consultant should show its working.
             </h2>
-          </div>
+          </Reveal>
 
-          <div style={{ borderTop: '1px solid #e2e8f0' }}>
-            {FAQS.map((item, idx) => (
-              <FaqItem
-                key={item.q}
-                item={item}
-                isOpen={openFaq === idx}
-                onToggle={() => setOpenFaq(openFaq === idx ? -1 : idx)}
-              />
-            ))}
-          </div>
+          <Reveal style={{ marginTop: 56 }}>
+            <div className="ld-cols-3">
+              {PRINCIPLES.map((p) => (
+                <div key={p.title} className="ld-col">
+                  <h3 className="ld-subtitle">{p.title}</h3>
+                  <p className="ld-copy" style={{ fontSize: 15, marginTop: 10 }}>{p.body}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section style={{ padding: '90px 48px', backgroundColor: '#070b14', textAlign: 'center' }}>
-        <div style={{ maxWidth: '620px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff' }}>
-            Ready to see where your product fits?
-          </h2>
-          <p style={{ fontSize: '15px', color: '#94a3b8', marginTop: '14px', lineHeight: 1.7 }}>
-            Upload your product and get your first market analysis in minutes.
-          </p>
-          <button onClick={onSignUp} className="btn btn-primary" style={{ padding: '13px 28px', fontSize: '15px', marginTop: '28px' }}>
-            Analyze My Product <ArrowRight size={16} />
-          </button>
+      {/* ================= FAQ ================= */}
+      <section id="faq" className="ld-section ld-section--tint">
+        <div className="ld-shell">
+          <Reveal>
+            <span className="ld-label">Questions</span>
+            <h2 className="ld-title" style={{ marginTop: 16, maxWidth: '22ch' }}>
+              Answered plainly, including what is not built yet.
+            </h2>
+          </Reveal>
+
+          <Reveal style={{ marginTop: 48 }}>
+            <div className="ld-cols-2">
+              {[FAQS.slice(0, 3), FAQS.slice(3)].map((group, gi) => (
+                <div key={gi}>
+                  {group.map((item, i) => {
+                    const index = gi * 3 + i;
+                    return (
+                      <FaqItem
+                        key={item.q}
+                        item={item}
+                        isOpen={openFaq === index}
+                        onToggle={() => setOpenFaq(openFaq === index ? -1 : index)}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{ padding: '36px 48px', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-        <span style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '-0.03em' }}>
-          Ports<span style={{ color: '#0066FF' }}>AI</span>
-        </span>
-        <span style={{ fontSize: '13px', color: '#94a3b8' }}>&copy; {new Date().getFullYear()} PortsAI. All rights reserved.</span>
+      {/* ================= FOOTER ================= */}
+      <footer className="ld-footer">
+        <div className="ld-shell">
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              gap: 32,
+              flexWrap: 'wrap'
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: '46ch' }}>
+              <span style={{ fontSize: 19, fontWeight: 500, letterSpacing: '-0.03em', color: 'var(--ld-ink)' }}>
+                Ports<span style={{ color: 'var(--ld-navy)' }}>AI</span>
+              </span>
+              <p className="ld-small">
+                Export market intelligence for Indian MSMEs. In early access — trade
+                recommendations currently run on a prototype dataset, labelled as such wherever
+                it appears.
+              </p>
+            </div>
+
+            <button className="ld-btn ld-btn--ghost" onClick={onSignUp}>
+              Analyze My Product <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
       </footer>
     </div>
   );
