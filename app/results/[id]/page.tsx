@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, Eye, Package } from 'lucide-react';
+import { ArrowLeft, Eye, Package } from 'lucide-react';
 import type { AnalysisResult } from '@shared/types';
 import AppHeader from '@/components/app/AppHeader';
 import MarketCard from '@/components/results/MarketCard';
@@ -61,134 +61,233 @@ export default function ResultsPage() {
   if (!analysis) return null;
 
   const { understanding, recommendations, summary } = analysis;
+  const featured = recommendations.slice(0, 3);
+  const remaining = recommendations.slice(3);
 
-  return (
-    <div className="page-shell">
-      <AppHeader />
-
-      <main className="app-main stack stack-xl">
-        {/* --- Header --- */}
-        <div className="stack stack-md">
-          <Link
-            href="/analyze"
-            className="row row-sm"
-            style={{ fontSize: 13.5, color: '#64748b', textDecoration: 'none', fontWeight: 600 }}
-          >
+  /* ---- Unmatched: one quiet column, nothing to compose around ---- */
+  if (understanding.isUnmatched || recommendations.length === 0) {
+    return (
+      <div className="page-shell">
+        <AppHeader />
+        <main className="app-main app-main--narrow stack stack-lg">
+          <Link href="/analyze" className="row row-sm muted" style={{ textDecoration: 'none' }}>
             <ArrowLeft size={15} /> Analyze another product
           </Link>
-
-          <div className="stack stack-xs">
-            <h1 className="page-title">{summary.headline}</h1>
-            <p className="page-subtitle">{analysis.input.description}</p>
-          </div>
-
+          <h1 className="page-title">{summary.headline}</h1>
           <PrototypeNotice />
-        </div>
-
-        {/* --- Unmatched: say so plainly, recommend nothing --- */}
-        {understanding.isUnmatched || recommendations.length === 0 ? (
           <div className="card stack stack-md">
             {summary.paragraphs.map((p, i) => (
-              <p key={i} style={{ fontSize: 14.5, color: '#475569', lineHeight: 1.7 }}>
+              <p key={i} className="prose">
                 {p}
               </p>
             ))}
             <Button onClick={() => router.push('/analyze')}>Try a different description</Button>
           </div>
-        ) : (
-          <>
-            {/* --- What the vision model saw --- */}
-            {analysis.vision && (
-              <section className="card stack stack-sm">
-                <div className="row row-sm">
-                  <Eye size={17} color="#0066ff" />
-                  <h2 className="section-title">What we saw in your images</h2>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-shell">
+      <AppHeader />
+
+      <div className="page-flow">
+        {/* ================= 1. HERO SUMMARY — asymmetric ================= */}
+        <section className="band band--plain">
+          <div className="band-inner">
+            <Link
+              href="/analyze"
+              className="row row-sm muted"
+              style={{ textDecoration: 'none', marginBottom: 20 }}
+            >
+              <ArrowLeft size={15} /> Analyze another product
+            </Link>
+
+            <div className="result-hero">
+              <div className="stack stack-md">
+                <span className="eyebrow">Analysis</span>
+                <h1 className="page-title">{summary.headline}</h1>
+                <p className="page-subtitle">{analysis.input.description}</p>
+                <div style={{ maxWidth: '52ch' }}>
+                  <PrototypeNotice />
                 </div>
-                <p style={{ fontSize: 14.5, color: '#475569', lineHeight: 1.7 }}>
-                  {analysis.vision.description}
-                </p>
-                <div className="row row-wrap" style={{ gap: 6 }}>
-                  {analysis.vision.terms.map((t) => (
-                    <span key={t} className="chip">
-                      {t}
+              </div>
+
+              {/* Facts rail — what was understood, as discrete rows */}
+              <div className="result-facts">
+                <div className="result-fact">
+                  <span className="eyebrow">Category</span>
+                  <div className="result-fact-value">{understanding.category}</div>
+                </div>
+                <div className="result-fact">
+                  <span className="eyebrow">Closest catalogue entry</span>
+                  <div className="result-fact-value">
+                    {understanding.closestProducts[0] ?? '—'}
+                  </div>
+                  <div className="muted" style={{ marginTop: 4 }}>
+                    The demo-catalogue product yours matched most closely. Every market
+                    below comes from this entry — if it looks wrong, reword your
+                    description and run it again.
+                  </div>
+                </div>
+                <div className="result-fact">
+                  <span className="eyebrow">Markets matched</span>
+                  <div className="result-fact-value">{recommendations.length}</div>
+                </div>
+                {analysis.vision && (
+                  <div className="result-fact">
+                    <span className="row row-sm">
+                      <Eye size={12} color="var(--text-light)" />
+                      <span className="eyebrow">Read from images</span>
                     </span>
-                  ))}
+                    <div className="result-fact-value">{analysis.vision.description}</div>
+                    <div className="row row-wrap" style={{ gap: 5, marginTop: 8 }}>
+                      {analysis.vision.terms.slice(0, 5).map((t) => (
+                        <span key={t} className="chip">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="result-fact">
+                  <span className="row row-sm">
+                    <Package size={12} color="var(--text-light)" />
+                    <span className="eyebrow">Matched on</span>
+                  </span>
+                  <div className="row row-wrap" style={{ gap: 5, marginTop: 8 }}>
+                    {understanding.matchedKeywords.slice(0, 6).map((k) => (
+                      <span key={k} className="chip">
+                        {k}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <p className="muted">Read by {analysis.vision.model}.</p>
-              </section>
-            )}
+              </div>
+            </div>
 
             {analysis.visionError && (
-              <Alert variant="info">
-                Your images could not be analyzed ({analysis.visionError}). These markets were
-                matched from your written description alone.
-              </Alert>
+              <div style={{ marginTop: 20 }}>
+                <Alert variant="info">
+                  Your images could not be analyzed ({analysis.visionError}). These markets were
+                  matched from your written description alone.
+                </Alert>
+              </div>
             )}
+          </div>
+        </section>
 
-            {/* --- Product understanding --- */}
-            <section className="card stack stack-sm">
-              <div className="row row-sm">
-                <Package size={17} color="#0066ff" />
-                <h2 className="section-title">How your product was understood</h2>
+        {/* ================= 2. MAP — full-bleed hero ================= */}
+        <section className="map-hero">
+          <div className="band-inner band-inner--tight" style={{ paddingBottom: 0 }}>
+            <div
+              className="section-head"
+              style={{ marginBottom: 0, border: 'none', paddingBottom: 0 }}
+            >
+              <div className="section-head-titles">
+                <span className="eyebrow">Coverage</span>
+                <h2 className="section-title">Where demand appears</h2>
               </div>
-              <div className="row row-wrap" style={{ gap: 8 }}>
-                <span className="chip" style={{ fontWeight: 700 }}>
-                  Category: {understanding.category}
-                </span>
-                {understanding.closestProducts.map((p) => (
-                  <span key={p} className="chip">
-                    {p}
-                  </span>
-                ))}
+              <span className="muted">Hover a country for detail</span>
+            </div>
+          </div>
+          <div className="map-hero-canvas">
+            <MarketHeatMap recommendations={recommendations} />
+          </div>
+        </section>
+
+        {/* ================= 3. FEATURED TOP MARKETS ================= */}
+        <section className="band band--plain">
+          <div className="band-inner">
+            <div className="section-head">
+              <div className="section-head-titles">
+                <span className="eyebrow">Start here</span>
+                <h2 className="section-title">Strongest matches</h2>
               </div>
-              <p className="muted">
-                Matched on: {understanding.matchedKeywords.join(', ')}
-              </p>
-            </section>
+              <span className="muted">
+                Ranked by how closely the dataset entry matched your product
+              </span>
+            </div>
 
-            {/* --- Heat map --- */}
-            <section className="stack stack-md">
-              <h2 className="section-title">Where demand appears</h2>
-              <MarketHeatMap recommendations={recommendations} />
-            </section>
-
-            {/* --- Market cards --- */}
-            <section className="stack stack-md">
-              <h2 className="section-title">Recommended markets</h2>
-              <div className="market-grid">
-                {recommendations.map((m, i) => (
-                  <MarketCard key={m.countryIso} market={m} rank={i + 1} />
-                ))}
-              </div>
-            </section>
-
-            {/* --- Summary --- */}
-            <section className="card stack stack-sm">
-              <h2 className="section-title">Summary</h2>
-              {summary.paragraphs.map((p, i) => (
-                <p key={i} style={{ fontSize: 14.5, color: '#475569', lineHeight: 1.7 }}>
-                  {p}
-                </p>
+            <div className="featured-grid">
+              {featured.map((m, i) => (
+                <MarketCard
+                  key={m.countryIso}
+                  market={m}
+                  rank={i + 1}
+                  variant={i === 0 ? 'featured' : 'default'}
+                />
               ))}
-            </section>
+            </div>
+          </div>
+        </section>
 
-            {/* --- Next steps --- */}
-            <section className="card stack stack-sm">
-              <h2 className="section-title">Suggested next steps</h2>
-              <div>
-                {summary.nextSteps.map((step) => (
-                  <div key={step} className="next-step">
-                    <CheckCircle2 size={17} color="#0066ff" style={{ flexShrink: 0, marginTop: 2 }} />
-                    <span>{step}</span>
-                  </div>
+        {/* ================= 4. REMAINING MARKETS — compact ================= */}
+        {remaining.length > 0 && (
+          <section className="band band--tint">
+            <div className="band-inner">
+              <div className="section-head">
+                <div className="section-head-titles">
+                  <span className="eyebrow">Also matched</span>
+                  <h2 className="section-title">
+                    {remaining.length} further {remaining.length === 1 ? 'market' : 'markets'}
+                  </h2>
+                </div>
+              </div>
+
+              <div className="market-grid">
+                {remaining.map((m, i) => (
+                  <MarketCard key={m.countryIso} market={m} rank={i + 4} variant="compact" />
                 ))}
               </div>
-            </section>
-
-            <AnalysisChat analysisId={analysis.id} />
-          </>
+            </div>
+          </section>
         )}
-      </main>
+
+        {/* ================= 5. EXPORT READINESS — timeline + detail ================= */}
+        <section className="band band--plain">
+          <div className="band-inner">
+            <div className="result-hero">
+              <div>
+                <div className="section-head">
+                  <div className="section-head-titles">
+                    <span className="eyebrow">Next</span>
+                    <h2 className="section-title">Export readiness</h2>
+                  </div>
+                </div>
+
+                <div className="timeline">
+                  {summary.nextSteps.map((step, i) => (
+                    <div
+                      key={step}
+                      className={`timeline-item ${i === 0 ? 'timeline-item--first' : ''}`}
+                    >
+                      <p className="timeline-step">{step}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="stack stack-md">
+                <span className="eyebrow">In detail</span>
+                {summary.paragraphs.map((p, i) => (
+                  <p key={i} className="prose" style={{ fontSize: 13.5 }}>
+                    {p}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ================= 6. ASSISTANT ================= */}
+        <section className="band band--tint band--last">
+          <div className="band-inner">
+            <AnalysisChat analysisId={analysis.id} />
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

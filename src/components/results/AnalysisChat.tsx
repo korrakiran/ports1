@@ -62,10 +62,10 @@ export default function AnalysisChat({ analysisId }: { analysisId: string }) {
   }
 
   return (
-    <div className="card stack stack-md">
+    <div className="card card--roomy stack stack-lg">
       <div>
         <h2 className="section-title">Ask about these results</h2>
-        <p className="muted" style={{ marginTop: 3 }}>
+        <p className="muted" style={{ marginTop: 8 }}>
           Answers come only from the markets matched above.
         </p>
       </div>
@@ -84,7 +84,7 @@ export default function AnalysisChat({ analysisId }: { analysisId: string }) {
       </div>
 
       {messages.length === 1 && (
-        <div className="row row-wrap" style={{ gap: 7 }}>
+        <div className="row row-wrap" style={{ gap: 'var(--sp-1)' }}>
           {SUGGESTIONS.map((s) => (
             <button
               key={s}
@@ -100,7 +100,7 @@ export default function AnalysisChat({ analysisId }: { analysisId: string }) {
       )}
 
       <form
-        className="row row-sm"
+        className="chat-composer"
         onSubmit={(e) => {
           e.preventDefault();
           send(input);
@@ -108,13 +108,20 @@ export default function AnalysisChat({ analysisId }: { analysisId: string }) {
       >
         <input
           className="input"
+          style={{ height: 56 }}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask a question about these markets…"
           aria-label="Ask a question"
         />
-        <Button type="submit" disabled={!input.trim() || sending} aria-label="Send">
-          <Send size={15} />
+        <Button
+          type="submit"
+          size="lg"
+          disabled={!input.trim() || sending}
+          aria-label="Send"
+          style={{ minWidth: 56, padding: '0 20px' }}
+        >
+          <Send size={17} />
         </Button>
       </form>
     </div>

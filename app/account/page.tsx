@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Clock, Mail } from 'lucide-react';
+import { ChevronRight, Clock, Mail } from 'lucide-react';
 import AppHeader from '@/components/app/AppHeader';
 import { Alert, Button, Spinner } from '@/components/ui/primitives';
 import { authApi, type AnalysisListItem } from '@/lib/api';
@@ -43,8 +43,8 @@ export default function AccountPage() {
     <div className="page-shell">
       <AppHeader />
 
-      <main className="app-main app-main--narrow stack stack-lg">
-        <div className="stack stack-xs">
+      <main className="app-main app-main--narrow stack stack-2xl">
+        <div className="stack stack-sm">
           <h1 className="page-title">{user.name}</h1>
           <p className="row row-sm muted">
             <Mail size={14} /> {user.email}
@@ -59,7 +59,7 @@ export default function AccountPage() {
           </p>
         </div>
 
-        <section className="stack stack-md">
+        <section className="stack stack-lg">
           <div className="row row-between">
             <h2 className="section-title">Previous analyses</h2>
             <Link href="/analyze">
@@ -72,8 +72,8 @@ export default function AccountPage() {
           {!analyses ? (
             <Spinner />
           ) : analyses.length === 0 ? (
-            <div className="card stack stack-sm">
-              <p style={{ fontSize: 14.5, color: '#475569' }}>
+            <div className="card card--roomy stack stack-md" style={{ textAlign: 'center' }}>
+              <p className="prose" style={{ margin: '0 auto' }}>
                 You have not analyzed a product yet.
               </p>
               <Link href="/analyze">
@@ -88,21 +88,37 @@ export default function AccountPage() {
                   href={`/results/${a.id}`}
                   style={{ textDecoration: 'none', color: 'inherit' }}
                 >
-                  <article className="card card--interactive row row-between">
-                    <div className="stack stack-xs">
-                      <span style={{ fontSize: 14.5, fontWeight: 700, color: '#090d16' }}>
-                        {a.description.length > 70
-                          ? `${a.description.slice(0, 70)}…`
+                  <article className="card card--interactive analysis-row">
+                    <div className="analysis-row-main">
+                      <h3 className="analysis-title">
+                        {a.description.length > 90
+                          ? `${a.description.slice(0, 90)}…`
                           : a.description}
-                      </span>
-                      <span className="muted">
-                        {a.category ?? 'No dataset match'} ·{' '}
-                        {a.marketCount === 0
-                          ? 'no markets matched'
-                          : `${a.marketCount} market${a.marketCount === 1 ? '' : 's'}`}{' '}
-                        · {new Date(a.createdAt).toLocaleDateString()}
-                      </span>
+                      </h3>
+                      <div className="analysis-meta">
+                        <span className="analysis-fact">
+                          <span className="eyebrow">Category</span>
+                          <span className="analysis-value">{a.category ?? 'No match'}</span>
+                        </span>
+                        <span className="analysis-fact">
+                          <span className="eyebrow">Markets</span>
+                          <span className="analysis-value">
+                            {a.marketCount === 0 ? 'None' : a.marketCount}
+                          </span>
+                        </span>
+                        <span className="analysis-fact">
+                          <span className="eyebrow">Analyzed</span>
+                          <span className="analysis-value">
+                            {new Date(a.createdAt).toLocaleDateString(undefined, {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </span>
+                      </div>
                     </div>
+                    <ChevronRight size={18} className="analysis-chevron" />
                   </article>
                 </Link>
               ))}

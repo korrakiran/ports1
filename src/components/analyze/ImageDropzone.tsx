@@ -83,7 +83,7 @@ export default function ImageDropzone({ files, onChange, maxFiles = 10 }: Props)
   }
 
   return (
-    <div className="stack stack-sm">
+    <div className="stack stack-md">
       <div
         className={`dropzone ${dragging ? 'dropzone--active' : ''}`}
         onClick={() => inputRef.current?.click()}
@@ -107,12 +107,12 @@ export default function ImageDropzone({ files, onChange, maxFiles = 10 }: Props)
         }}
         aria-label="Add product images"
       >
-        <ImagePlus size={24} color="#0066ff" />
-        <span style={{ fontSize: 14, fontWeight: 700, color: '#090d16' }}>
-          {dragging ? 'Drop images here' : 'Drag images here, or click to browse'}
+        <ImagePlus size={34} color={dragging ? 'var(--accent-blue)' : 'var(--text-light)'} />
+        <span className="dropzone-title">
+          {dragging ? 'Drop your images' : 'Drag product images here'}
         </span>
-        <span style={{ fontSize: 12, color: '#64748b' }}>
-          JPG, PNG or WebP · up to {maxFiles} images
+        <span className="dropzone-hint">
+          or click to browse · JPG, PNG or WebP · up to {maxFiles} images
         </span>
         <input
           ref={inputRef}
@@ -143,7 +143,7 @@ export default function ImageDropzone({ files, onChange, maxFiles = 10 }: Props)
                 onClick={() => removeFile(f.id)}
                 aria-label={`Remove ${f.file.name}`}
               >
-                <X size={13} />
+                <X size={14} />
               </button>
             </div>
           ))}

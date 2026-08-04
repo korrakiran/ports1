@@ -107,26 +107,34 @@ export default function ProcessingPage() {
                 const active = i === step;
 
                 return (
+                  /* Entrance lives on a wrapper whose class never changes, so
+                     advancing a step cannot restart the intro animation. The
+                     inner row handles active/done purely with transitions. */
                   <div
                     key={label}
+                    className="step-enter"
+                    style={{ animationDelay: `${i * 90}ms` }}
+                  >
+                  <div
                     className={`step-row ${
                       done ? 'step-row--done' : active ? 'step-row--active' : 'step-row--pending'
                     }`}
                   >
                     <span
-                      className="step-icon"
+                      className={`step-icon ${done ? 'step-icon--done' : ''}`}
                       style={{
                         background: done ? '#0066ff' : active ? '#ffffff' : '#f1f5f9',
                         border: active ? '1px solid #bfdbfe' : 'none'
                       }}
                     >
                       {done ? (
-                        <Check size={14} color="#fff" strokeWidth={3} />
+                        <Check size={14} color="#fff" strokeWidth={3} className="step-check" />
                       ) : active ? (
                         <Spinner size={14} />
                       ) : null}
                     </span>
                     <span className="step-label">{label}</span>
+                  </div>
                   </div>
                 );
               })}

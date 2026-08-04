@@ -124,7 +124,7 @@ export function Alert({
 export function PrototypeNotice({ text }: { text?: string }) {
   return (
     <div className="disclaimer-bar">
-      <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+      <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
       <span>
         <strong>Prototype demo dataset.</strong>{' '}
         {text ??
@@ -151,9 +151,10 @@ export function DemandBadge({ level }: { level: DemandLevel }) {
   const s = DEMAND_STYLE[level] ?? DEMAND_STYLE.Medium;
   return (
     <span
-      className="badge"
-      style={{ background: s.bg, color: s.fg, border: `1px solid ${s.border}` }}
+      className="demand-badge"
+      style={{ background: s.bg, color: s.fg, borderColor: s.border }}
     >
+      <span className="demand-dot" style={{ background: s.fg }} />
       {level} demand
     </span>
   );

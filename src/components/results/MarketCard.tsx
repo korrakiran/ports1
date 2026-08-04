@@ -7,44 +7,62 @@ import { DemandBadge, MarketTypeChip } from '@/components/ui/primitives';
 /**
  * One recommended market.
  *
+ * `variant` is purely presentational — the top matches carry more visual weight
+ * than the tail, so the grid has rhythm instead of twelve identical boxes.
+ *
  * `matchedProducts` is shown deliberately: it is the audit trail explaining why
- * this country appears at all, so the recommendation can never look like it came
+ * this country appears at all, so a recommendation can never look like it came
  * from nowhere.
  */
 export default function MarketCard({
   market,
-  rank
+  rank,
+  variant = 'default'
 }: {
   market: MarketRecommendation;
   rank: number;
+  variant?: 'featured' | 'default' | 'compact';
 }) {
-  return (
-    <article className="card card--interactive stack stack-sm fade-up">
-      <div className="row row-between" style={{ alignItems: 'flex-start' }}>
-        <div className="row row-sm">
-          <span className="rank-chip">{rank}</span>
-          <div>
-            <h3 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em' }}>
-              {market.country}
-            </h3>
-            <span style={{ fontSize: 12, color: '#94a3b8' }}>{market.region}</span>
+  const rankLabel = String(rank).padStart(2, '0');
+
+  if (variant === 'compact') {
+    return (
+      <article className="market-card market-card--compact">
+        <div className="row row-sm" style={{ minWidth: 0 }}>
+          <span className="market-rank">{rankLabel}</span>
+          <div style={{ minWidth: 0 }}>
+            <div className="market-country">{market.country}</div>
+            <div className="market-region">{market.region}</div>
           </div>
         </div>
+        <DemandBadge level={market.demand} />
+      </article>
+    );
+  }
+
+  const featured = variant === 'featured';
+
+  return (
+    <article className={`market-card ${featured ? 'market-card--featured' : ''} fade-up`}>
+      <div>
+        <span className="market-rank">{rankLabel}</span>
+        <h3 className="market-country" style={{ marginTop: 5 }}>
+          {market.country}
+        </h3>
+        <div className="market-region">{market.region}</div>
       </div>
 
-      <div className="row row-wrap" style={{ gap: 7 }}>
+      <div className="row row-wrap" style={{ gap: 6 }}>
         <DemandBadge level={market.demand} />
         <MarketTypeChip type={market.marketType} />
       </div>
 
-      <p style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.6 }}>{market.notes[0]}</p>
+      {featured && <p className="market-note">{market.notes[0]}</p>}
 
-      <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
-        <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>
-          MATCHED ON
-        </span>
-        <div className="row row-wrap" style={{ gap: 6, marginTop: 6 }}>
-          {market.matchedProducts.slice(0, 3).map((p) => (
+      <div className="market-matched" style={{ marginTop: 'auto' }}>
+        <span className="eyebrow">Matched on</span>
+        <div className="row row-wrap" style={{ gap: 5, marginTop: 8 }}>
+          {market.matchedProducts.slice(0, featured ? 3 : 2).map((p) => (
             <span key={p} className="chip">
               {p}
             </span>
