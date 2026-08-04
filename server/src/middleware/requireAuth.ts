@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from 'express';
-import { AUTH_COOKIE, verifyToken } from '../auth/tokens.js';
 import { User } from '../models/User.js';
 
 declare global {
@@ -12,34 +11,27 @@ declare global {
 }
 
 /**
- * Rejects the request unless it carries a valid session cookie whose subject
- * still resolves to an existing user — a token alone is not enough, since the
- * account may have been deleted since it was issued.
+ * Middleware that guards routes requiring authentication. Reads the user's ID
+ * from the active server session and verifies that the account exists in MongoDB.
  */
 export async function requireAuth(
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const token = req.cookies?.[AUTH_COOKIE];
+  const userId = req.session?.userId;
 
-  if (!token) {
+  if (!userId) {
     res.status(401).json({ error: 'Authentication required.' });
     return;
   }
 
-  const payload = verifyToken(token);
-  if (!payload) {
-    res.status(401).json({ error: 'Session expired. Please log in again.' });
-    return;
-  }
-
-  const exists = await User.exists({ _id: payload.sub });
+  const exists = await User.exists({ _id: userId });
   if (!exists) {
     res.status(401).json({ error: 'Account no longer exists.' });
     return;
   }
 
-  req.userId = payload.sub;
+  req.userId = userId;
   next();
 }

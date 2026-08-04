@@ -8,8 +8,7 @@ import type {
  * Single place that talks to the API.
  *
  * Every request sends credentials so the httpOnly session cookie travels with it —
- * the token is never read by JavaScript, which is what keeps an XSS bug from
- * stealing a session.
+ * session state is managed server-side and never exposed to client-side JavaScript.
  */
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ??

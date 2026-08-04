@@ -9,21 +9,16 @@ const schema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
 
-  /** Replace with the production connection string when it is provided. */
+  /** MongoDB connection string. */
   MONGODB_URI: z.string().min(1).default('mongodb://127.0.0.1:27017/portsai'),
 
-  /**
-   * Must be set explicitly in production — a default secret would make every
-   * issued token forgeable by anyone who has read the source.
-   */
-  JWT_SECRET: z.string().min(16).optional(),
-  JWT_EXPIRES_IN: z.string().default('7d'),
+  /** Secret key used to encrypt express-session cookies. */
+  SESSION_SECRET: z.string().min(16).optional(),
 
   /** Origin allowed to send credentialed requests. */
   CLIENT_ORIGIN: z.string().default('http://localhost:3000'),
 
-  /** Optional. Without it, image analysis is skipped and matching uses the
-   *  written description only. */
+  /** Optional vision model configuration. */
   NVIDIA_API_KEY: z.string().optional(),
   NVIDIA_VISION_MODEL: z.string().default('meta/llama-3.2-90b-vision-instruct')
 });
@@ -38,20 +33,13 @@ if (!parsed.success) {
 
 const raw = parsed.data;
 
-if (raw.NODE_ENV === 'production' && !raw.JWT_SECRET) {
-  console.error('JWT_SECRET must be set in production. Refusing to start with a generated secret.');
+if (raw.NODE_ENV === 'production' && !raw.SESSION_SECRET) {
+  console.error('SESSION_SECRET must be set in production.');
   process.exit(1);
-}
-
-if (!raw.JWT_SECRET) {
-  console.warn(
-    '[config] JWT_SECRET is not set — using an insecure development-only secret. ' +
-      'Set JWT_SECRET in .env before deploying.'
-  );
 }
 
 export const env = {
   ...raw,
-  JWT_SECRET: raw.JWT_SECRET ?? 'dev-only-insecure-secret-change-me',
+  SESSION_SECRET: raw.SESSION_SECRET ?? 'dev-only-insecure-session-secret-change-me',
   isProduction: raw.NODE_ENV === 'production'
 };

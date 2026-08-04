@@ -3,9 +3,10 @@ import { z } from 'zod';
 import type { PublicUser } from '@shared/types';
 import { User, hashPassword, type UserDocument } from '../models/User.js';
 import { Analysis } from '../models/Analysis.js';
-import { clearAuthCookie, setAuthCookie, signToken } from '../auth/tokens.js';
+import { SESSION_COOKIE } from '../auth/session.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { HttpError, asyncHandler } from '../middleware/errors.js';
+import { env } from '../config/env.js';
 
 const router = Router();
 
@@ -48,7 +49,7 @@ router.post(
       passwordHash: await hashPassword(password)
     });
 
-    setAuthCookie(res, signToken(String(user._id)));
+    req.session.userId = String(user._id);
     res.status(201).json({ user: toPublicUser(user) });
   })
 );
@@ -59,24 +60,31 @@ router.post(
   asyncHandler(async (req, res) => {
     const { email, password } = loginSchema.parse(req.body);
 
-    // passwordHash is select:false, so it must be requested explicitly.
     const user = await User.findOne({ email }).select('+passwordHash');
 
-    // Same message and shape for "no such user" and "wrong password", so the
-    // endpoint cannot be used to discover which emails have accounts.
     if (!user || !(await user.comparePassword(password))) {
       throw new HttpError(401, 'Incorrect email or password.');
     }
 
-    setAuthCookie(res, signToken(String(user._id)));
+    req.session.userId = String(user._id);
     res.json({ user: toPublicUser(user) });
   })
 );
 
 /* POST /api/auth/logout */
-router.post('/logout', (_req, res) => {
-  clearAuthCookie(res);
-  res.json({ ok: true });
+router.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('[auth] failed to destroy session:', err);
+    }
+    res.clearCookie(SESSION_COOKIE, {
+      httpOnly: true,
+      secure: env.isProduction,
+      sameSite: env.isProduction ? 'none' : 'lax',
+      path: '/'
+    });
+    res.json({ ok: true });
+  });
 });
 
 /* GET /api/auth/me — drives session persistence on the client */
