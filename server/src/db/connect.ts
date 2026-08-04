@@ -1,17 +1,23 @@
 import mongoose from 'mongoose';
 import { env } from '../config/env.js';
 
+let isConnected = false;
+
 /**
- * Connects to MongoDB. Swap MONGODB_URI in .env when the production connection
- * string is available — nothing else in the codebase needs to change.
+ * Connects to MongoDB with connection caching for serverless deployments (Vercel).
  */
 export async function connectDatabase(): Promise<void> {
+  if (isConnected || mongoose.connection.readyState === 1) {
+    return;
+  }
+
   mongoose.set('strictQuery', true);
 
   try {
     await mongoose.connect(env.MONGODB_URI, {
       serverSelectionTimeoutMS: 5000
     });
+    isConnected = true;
     const { host, name } = mongoose.connection;
     console.log(`[db] connected to ${host}/${name}`);
   } catch (err) {
@@ -23,4 +29,5 @@ export async function connectDatabase(): Promise<void> {
 
 export async function disconnectDatabase(): Promise<void> {
   await mongoose.disconnect();
+  isConnected = false;
 }
