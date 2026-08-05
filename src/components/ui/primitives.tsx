@@ -121,11 +121,11 @@ export function DataNotice({ text }: { text?: string }) {
 /* ------------------------------------------------------------------ */
 
 const DEMAND_STYLE: Record<DemandLevel, { bg: string; fg: string; border: string }> = {
-  'Very High': { bg: '#eff6ff', fg: '#0052cc', border: '#bfdbfe' },
-  High: { bg: '#eff6ff', fg: '#0066ff', border: '#bfdbfe' },
-  Moderate: { bg: '#f0f7ff', fg: '#2563eb', border: '#dbeafe' },
-  Low: { bg: '#f8fafc', fg: '#3b82f6', border: '#e2e8f0' },
-  Niche: { bg: '#f8fafc', fg: '#64748b', border: '#e2e8f0' }
+  'Very High': { bg: '#eff6ff', fg: '#2563eb', border: '#bfdbfe' },
+  High: { bg: '#ecfdf5', fg: '#059669', border: '#a7f3d0' },
+  Moderate: { bg: '#fffbeb', fg: '#d97706', border: '#fde68a' },
+  Low: { bg: '#f5f3ff', fg: '#7c3aed', border: '#ddd6fe' },
+  Niche: { bg: '#fdf2f8', fg: '#db2777', border: '#fbcfe8' }
 };
 
 export function DemandBadge({ level }: { level: DemandLevel }) {
@@ -141,15 +141,15 @@ export function DemandBadge({ level }: { level: DemandLevel }) {
   );
 }
 
-/** Bold, high-contrast fill colors per demand level for the heat map. */
+/** Distinct multi-color light palette per demand level for the heat map. */
 export function demandFill(level: DemandLevel): string {
   return (
     {
-      'Very High': '#0052CC',
-      High: '#0066FF',
-      Moderate: '#3b82f6',
-      Low: '#60a5fa',
-      Niche: '#93c5fd'
+      'Very High': '#3b82f6', // Azure Blue
+      High: '#34d399',      // Mint Green
+      Moderate: '#fbbf24',  // Amber Gold
+      Low: '#a78bfa',       // Lavender Purple
+      Niche: '#f472b6'      // Coral Pink
     } as Record<DemandLevel, string>
   )[level] ?? '#3b82f6';
 }

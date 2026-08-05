@@ -8,9 +8,9 @@ import { formatShare, formatTradeValue } from '@/lib/format';
 
 /**
  * Enhanced Choropleth HeatMap:
- * - Bold, high-contrast demand colors
+ * - Distinct multi-colored light palette per demand tier
  * - Hover 3D Pop Out elevation effect on demanding countries
- * - Clean callout card detailing market revenue, rank, and import share
+ * - Full 5-tier demand legend
  */
 export default function MarketHeatMap({
   recommendations,
@@ -63,6 +63,8 @@ export default function MarketHeatMap({
     [byIso2, handleMouseMove]
   );
 
+  const ALL_LEVELS = ['Very High', 'High', 'Moderate', 'Low', 'Niche'] as const;
+
   return (
     <div className="card card--flush" style={{ position: 'relative', overflow: 'visible' }} ref={wrapRef}>
       <style>{`
@@ -73,9 +75,9 @@ export default function MarketHeatMap({
           filter: drop-shadow(0 6px 18px rgba(15, 23, 42, 0.04));
         }
         .heatmap-svg path {
-          fill: #e8effb;
+          fill: #f1f5f9;
           stroke: #ffffff;
-          stroke-width: 0.7;
+          stroke-width: 0.8;
           transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
                       fill 0.22s cubic-bezier(0.16, 1, 0.3, 1),
                       filter 0.22s cubic-bezier(0.16, 1, 0.3, 1),
@@ -85,10 +87,9 @@ export default function MarketHeatMap({
 
         /* 3D POP OUT HOVER EFFECT FOR DEMANDING COUNTRIES */
         .heatmap-svg path:hover {
-          fill: #0066FF !important;
-          stroke: #ffffff !important;
+          stroke: #090d16 !important;
           stroke-width: 1.8 !important;
-          filter: drop-shadow(0 10px 22px rgba(0, 102, 255, 0.45));
+          filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.3));
           transform: translateY(-4px) scale(1.025);
         }
 
@@ -107,7 +108,7 @@ export default function MarketHeatMap({
       >
         <WorldSVGMap className="heatmap-svg" />
 
-        {/* Clean, Bold Hover Tooltip */}
+        {/* Clean Hover Callout Card */}
         {hovered && (
           <div
             style={{
@@ -152,8 +153,8 @@ export default function MarketHeatMap({
             <div style={{ fontSize: '11.5px', fontWeight: 600, color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
               <span
                 style={{
-                  width: '7px',
-                  height: '7px',
+                  width: '8px',
+                  height: '8px',
                   borderRadius: '50%',
                   backgroundColor: demandFill(hovered.demand)
                 }}
@@ -164,7 +165,7 @@ export default function MarketHeatMap({
         )}
       </div>
 
-      {/* Legend bar */}
+      {/* Full 5-tier Legend Bar */}
       <div
         className="row row-wrap"
         style={{
@@ -176,22 +177,21 @@ export default function MarketHeatMap({
           borderBottomRightRadius: '14px'
         }}
       >
-        {(['Very High', 'High', 'Moderate', 'Low', 'Niche'] as const)
-          .filter((level) => recommendations.some((r) => r.demand === level))
-          .map((level) => (
-            <span key={level} className="row row-sm" style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>
-              <span
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 3,
-                  background: demandFill(level),
-                  display: 'inline-block'
-                }}
-              />
-              {level} Demand
-            </span>
-          ))}
+        {ALL_LEVELS.map((level) => (
+          <span key={level} className="row row-sm" style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 3,
+                background: demandFill(level),
+                display: 'inline-block',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+              }}
+            />
+            {level} Demand
+          </span>
+        ))}
       </div>
     </div>
   );
