@@ -33,13 +33,15 @@ function toPublicUser(user: UserDocument): PublicUser {
   };
 }
 
-/* Helper to safely save session in serverless environment */
+/* Helper to safely save session in serverless environment without crashing user requests */
 function saveSession(req: any): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (!req.session) return resolve();
     req.session.save((err: any) => {
-      if (err) reject(err);
-      else resolve();
+      if (err) {
+        console.error('[session] Store save error:', err);
+      }
+      resolve();
     });
   });
 }
@@ -60,8 +62,11 @@ router.post(
       passwordHash: await hashPassword(password)
     });
 
-    req.session.userId = String(user._id);
-    await saveSession(req);
+    if (req.session) {
+      req.session.userId = String(user._id);
+      await saveSession(req);
+    }
+
     res.status(201).json({ user: toPublicUser(user) });
   })
 );
@@ -78,8 +83,11 @@ router.post(
       throw new HttpError(401, 'Incorrect email or password.');
     }
 
-    req.session.userId = String(user._id);
-    await saveSession(req);
+    if (req.session) {
+      req.session.userId = String(user._id);
+      await saveSession(req);
+    }
+
     res.json({ user: toPublicUser(user) });
   })
 );
@@ -121,30 +129,36 @@ router.get(
   })
 );
 
-/* GET /api/auth/profile — user plus their previous analyses */
+/* GET /api/auth/profile — user info and their previous analyses */
 router.get(
   '/profile',
   requireAuth,
   asyncHandler(async (req, res) => {
-    const user = await User.findById(req.userId);
+    const [user, analyses] = await Promise.all([
+      User.findById(req.userId),
+      Analysis.find({ userId: req.userId }).sort({ createdAt: -1 })
+    ]);
+
     if (!user) throw new HttpError(401, 'Account no longer exists.');
 
-    const analyses = await Analysis.find({ userId: req.userId })
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .lean();
+    const items = analyses.map((a) => {
+      const isLegacy =
+        !Array.isArray(a.result?.understanding?.matchedProducts) ||
+        a.result?.recommendations?.some((r: any) => typeof r?.tradeValue !== 'number');
+
+      return {
+        id: String(a._id),
+        description: a.description ?? 'Unnamed product',
+        createdAt: a.createdAt.toISOString(),
+        category: a.result?.understanding?.matchedProducts?.[0]?.hs4 ?? null,
+        marketCount: a.result?.recommendations?.length ?? 0,
+        legacy: isLegacy
+      };
+    });
 
     res.json({
       user: toPublicUser(user),
-      analyses: analyses.map((a) => ({
-        id: String(a._id),
-        description: a.description,
-        createdAt: a.createdAt.toISOString(),
-        marketCount: a.result?.recommendations?.length ?? 0,
-        category: a.result?.understanding?.matchedProducts?.[0]?.hs4 ?? null,
-        // Saved before the OEC dataset was integrated — no trade figures behind it.
-        legacy: !Array.isArray(a.result?.understanding?.matchedProducts)
-      }))
+      analyses: items
     });
   })
 );
