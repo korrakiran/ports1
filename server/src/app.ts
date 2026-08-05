@@ -5,6 +5,7 @@ import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import { env } from './config/env.js';
 import { SESSION_COOKIE } from './auth/session.js';
+import { getMongoClientPromise } from './db/connect.js';
 import authRoutes from './routes/auth.routes.js';
 import analysisRoutes from './routes/analysis.routes.js';
 import { errorHandler, notFound } from './middleware/errors.js';
@@ -16,14 +17,7 @@ export function createApp() {
 
   app.use(
     cors({
-      origin: (origin, callback) => {
-        // Allow requests from client origin, Vercel deployments, or same-origin (no origin header)
-        if (!origin || origin === env.CLIENT_ORIGIN || origin.endsWith('.vercel.app') || origin.startsWith('http://localhost:')) {
-          callback(null, true);
-        } else {
-          callback(null, true); // Permissive CORS for public Vercel previews
-        }
-      },
+      origin: true,
       credentials: true
     })
   );
@@ -32,7 +26,7 @@ export function createApp() {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use(cookieParser());
 
-  // Server-side session middleware backed by MongoDB
+  // Server-side session middleware backed by MongoDB (reusing single MongoClient promise)
   app.use(
     session({
       name: SESSION_COOKIE,
@@ -40,10 +34,10 @@ export function createApp() {
       resave: false,
       saveUninitialized: false,
       store: MongoStore.create({
-        mongoUrl: env.MONGODB_URI,
+        clientPromise: getMongoClientPromise(),
         collectionName: 'sessions',
         ttl: 7 * 24 * 60 * 60,
-        touchAfter: 24 * 3600 // Lazy session update
+        touchAfter: 24 * 3600
       }),
       cookie: {
         httpOnly: true,
