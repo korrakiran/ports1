@@ -6,9 +6,6 @@ import { DATA_SOURCE, type DemandLevel } from '@shared/types';
 
 /**
  * Small shared primitives for the app screens.
- *
- * They exist so pages compose UI instead of repeating markup and inline styles —
- * every visual token comes from globals.css.
  */
 
 /* ------------------------------------------------------------------ */
@@ -51,6 +48,35 @@ export function Button({
 }
 
 /* ------------------------------------------------------------------ */
+/* Field                                                               */
+/* ------------------------------------------------------------------ */
+
+export function Field({
+  label,
+  htmlFor,
+  hint,
+  error,
+  children
+}: {
+  label: string;
+  htmlFor?: string;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="field">
+      <label className="field-label" htmlFor={htmlFor}>
+        {label}
+      </label>
+      {children}
+      {hint && <span className="field-hint">{hint}</span>}
+      {error && <span className="field-error">{error}</span>}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Spinner                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -58,40 +84,8 @@ export function Spinner({ size = 18 }: { size?: number }) {
   return (
     <span
       className="spinner"
-      style={{ width: size, height: size, display: 'inline-block' }}
-      role="status"
-      aria-label="Loading"
+      style={{ width: size, height: size, borderWidth: Math.max(2, Math.round(size / 9)) }}
     />
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Form field                                                          */
-/* ------------------------------------------------------------------ */
-
-interface FieldProps {
-  label: string;
-  htmlFor?: string;
-  hint?: string;
-  error?: string;
-  optional?: boolean;
-  children: React.ReactNode;
-}
-
-export function Field({ label, htmlFor, hint, error, optional, children }: FieldProps) {
-  return (
-    <div>
-      <label className="field-label" htmlFor={htmlFor}>
-        {label}
-        {optional && <span style={{ color: '#94a3b8', fontWeight: 500 }}> (optional)</span>}
-      </label>
-      {children}
-      {error ? (
-        <p className="field-error">{error}</p>
-      ) : hint ? (
-        <p className="field-hint">{hint}</p>
-      ) : null}
-    </div>
   );
 }
 
@@ -103,24 +97,16 @@ export function Alert({
   variant = 'error',
   children
 }: {
-  variant?: 'error' | 'info';
+  variant?: 'error' | 'info' | 'success';
   children: React.ReactNode;
 }) {
-  return (
-    <div className={`alert alert-${variant}`} role={variant === 'error' ? 'alert' : undefined}>
-      {children}
-    </div>
-  );
+  return <div className={`alert alert-${variant}`}>{children}</div>;
 }
 
 /* ------------------------------------------------------------------ */
-/* Data provenance                                                     */
+/* Data notice                                                         */
 /* ------------------------------------------------------------------ */
 
-/**
- * Rendered wherever dataset-derived figures are shown. Provenance should never
- * be more than one glance away from the numbers it describes.
- */
 export function DataNotice({ text }: { text?: string }) {
   return (
     <div className="data-notice">
@@ -134,16 +120,12 @@ export function DataNotice({ text }: { text?: string }) {
 /* Qualitative badges                                                  */
 /* ------------------------------------------------------------------ */
 
-/**
- * Colour per demand level — one navy ramp, strongest darkest.
- * The level itself is computed server-side from rank and import share.
- */
 const DEMAND_STYLE: Record<DemandLevel, { bg: string; fg: string; border: string }> = {
-  'Very High': { bg: '#eef4ff', fg: '#0a3f96', border: '#c7d9ff' },
+  'Very High': { bg: '#eff6ff', fg: '#0052cc', border: '#bfdbfe' },
   High: { bg: '#eff6ff', fg: '#0066ff', border: '#bfdbfe' },
-  Moderate: { bg: '#f4f7fc', fg: '#4a7cc4', border: '#dbe4f2' },
-  Low: { bg: '#f7f9fb', fg: '#7d8ba1', border: '#e6ebf2' },
-  Niche: { bg: '#f8fafc', fg: '#94a3b8', border: '#eef2f7' }
+  Moderate: { bg: '#f0f7ff', fg: '#2563eb', border: '#dbeafe' },
+  Low: { bg: '#f8fafc', fg: '#3b82f6', border: '#e2e8f0' },
+  Niche: { bg: '#f8fafc', fg: '#64748b', border: '#e2e8f0' }
 };
 
 export function DemandBadge({ level }: { level: DemandLevel }) {
@@ -159,15 +141,15 @@ export function DemandBadge({ level }: { level: DemandLevel }) {
   );
 }
 
-/** Fill colour for a demand level, shared by the badge and the heat map. */
+/** Bold, high-contrast fill colors per demand level for the heat map. */
 export function demandFill(level: DemandLevel): string {
   return (
     {
-      'Very High': '#0a3f96',
-      High: '#2f6fd0',
-      Moderate: '#7aa2e0',
-      Low: '#b9cdf0',
-      Niche: '#dbe4f2'
+      'Very High': '#0052CC',
+      High: '#0066FF',
+      Moderate: '#3b82f6',
+      Low: '#60a5fa',
+      Niche: '#93c5fd'
     } as Record<DemandLevel, string>
-  )[level];
+  )[level] ?? '#3b82f6';
 }
