@@ -33,6 +33,17 @@ function toPublicUser(user: UserDocument): PublicUser {
   };
 }
 
+/* Helper to safely save session in serverless environment */
+function saveSession(req: any): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!req.session) return resolve();
+    req.session.save((err: any) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
 /* POST /api/auth/signup */
 router.post(
   '/signup',
@@ -50,6 +61,7 @@ router.post(
     });
 
     req.session.userId = String(user._id);
+    await saveSession(req);
     res.status(201).json({ user: toPublicUser(user) });
   })
 );
@@ -67,24 +79,35 @@ router.post(
     }
 
     req.session.userId = String(user._id);
+    await saveSession(req);
     res.json({ user: toPublicUser(user) });
   })
 );
 
 /* POST /api/auth/logout */
 router.post('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('[auth] failed to destroy session:', err);
-    }
+  if (req.session) {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('[auth] failed to destroy session:', err);
+      }
+      res.clearCookie(SESSION_COOKIE, {
+        httpOnly: true,
+        secure: env.isProduction,
+        sameSite: 'lax',
+        path: '/'
+      });
+      res.json({ ok: true });
+    });
+  } else {
     res.clearCookie(SESSION_COOKIE, {
       httpOnly: true,
       secure: env.isProduction,
-      sameSite: env.isProduction ? 'none' : 'lax',
+      sameSite: 'lax',
       path: '/'
     });
     res.json({ ok: true });
-  });
+  }
 });
 
 /* GET /api/auth/me — drives session persistence on the client */
