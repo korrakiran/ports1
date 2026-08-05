@@ -1,58 +1,68 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
-import Interactive3DGlobe from './globe/Interactive3DGlobe';
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import WorldSVGMap from './WorldSVGMap';
 
+// Dynamically import 3D Globe to avoid SSR canvas / window issues
+const Interactive3DGlobe = dynamic(() => import('./globe/Interactive3DGlobe'), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{
+        width: '100%',
+        height: '520px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8fafc',
+        borderRadius: '20px',
+        color: '#64748b',
+        fontSize: '14px',
+        fontWeight: 600
+      }}
+    >
+      Loading 3D Globe...
+    </div>
+  )
+});
+
 /**
- * Enhanced WorldHeroMap:
- * - Interactive 2D & 3D switching
- * - Country hover 3D "Pop Out" effect with dynamic glow, elevation shadow, and hover tooltips
- * - Concurrently pulsing target market beacon pins
- * - Widescreen width layout
+ * WorldHeroMap Component
+ * Interactive vector map with centroid target beacons, hover callouts, and 3D Globe toggle.
  */
 export default function WorldHeroMap() {
   const [viewMode, setViewMode] = useState('map'); // 'map' | 'globe'
   const [hoveredCountry, setHoveredCountry] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
-  const containerRef = useRef(null);
 
+  // PINS mapped to SVG Centroids
   const pins = [
-    { id: 'us', name: 'United States', demand: 'Very high demand', type: 'Premium Market', left: '22.2%', top: '51.4%' },
-    { id: 'br', name: 'Brazil', demand: 'Growing demand', type: 'Volume Market', left: '31.4%', top: '74.0%' },
-    { id: 'gb', name: 'United Kingdom', demand: 'High demand', type: 'Premium Market', left: '46.1%', top: '42.3%' },
-    { id: 'de', name: 'Germany', demand: 'High demand', type: 'Premium Market', left: '49.9%', top: '44.7%' },
-    { id: 'ae', name: 'United Arab Emirates', demand: 'Very high demand', type: 'Re-export Hub', left: '62.2%', top: '59.1%' },
-    { id: 'in', name: 'India', demand: 'Export Origin (Your Base)', type: 'Manufacturing Hub', left: '68.5%', top: '57.0%' },
-    { id: 'cn', name: 'China', demand: 'Volume Market', type: 'Manufacturing Hub', left: '76.5%', top: '52.9%' },
-    { id: 'jp', name: 'Japan', demand: 'High demand', type: 'Premium Market', left: '85.3%', top: '52.9%' },
-    { id: 'au', name: 'Australia', demand: 'High demand', type: 'Volume Market', left: '84.3%', top: '79.7%' },
+    { id: 'us', name: 'United States', left: '22%', top: '44%', demand: 'High Demand', type: 'Primary Importer' },
+    { id: 'de', name: 'Germany', left: '50.5%', top: '35%', demand: 'High Demand', type: 'European Hub' },
+    { id: 'ae', name: 'United Arab Emirates', left: '61.5%', top: '49%', demand: 'Very High Demand', type: 'Middle East Gateway' },
+    { id: 'in', name: 'India', left: '67%', top: '51%', demand: 'Origin Country', type: 'Export Base' },
+    { id: 'au', name: 'Australia', left: '85.5%', top: '75%', demand: 'High Demand', type: 'Pacific Importer' }
   ];
 
-  const handleMouseMove = useCallback((e) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    setTooltipPos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    });
-  }, []);
-
+  // SVG Mouse handlers for interactive hover
   const handleSvgMouseOver = (e) => {
-    const target = e.target;
-    if (target.tagName === 'path') {
-      const id = target.getAttribute('id');
-      const label = target.getAttribute('aria-label');
-      if (label || id) {
-        const pin = pins.find((p) => p.id === id);
-        setHoveredCountry({
-          id,
-          name: label || id?.toUpperCase(),
-          demand: pin?.demand || 'Active Market Opportunity',
-          type: pin?.type || 'Target Export Destination',
-          isTarget: Boolean(pin)
-        });
-      }
+    const path = e.target.closest('path');
+    if (!path) return;
+
+    const id = path.id;
+    const matchedPin = pins.find((p) => p.id === id);
+
+    if (matchedPin) {
+      setHoveredCountry(matchedPin);
+    } else {
+      const countryName = path.getAttribute('name') || id.toUpperCase();
+      setHoveredCountry({
+        id,
+        name: countryName,
+        demand: 'Active Market',
+        type: 'Trade Partner'
+      });
     }
   };
 
@@ -60,62 +70,57 @@ export default function WorldHeroMap() {
     setHoveredCountry(null);
   };
 
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      const stage = document.getElementById('world-hero-stage');
+      if (stage) {
+        const rect = stage.getBoundingClientRect();
+        setTooltipPos({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        });
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   return (
     <div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
+      id="world-hero-stage"
+      className="hero-map-stage"
       style={{
         position: 'relative',
         width: '100%',
-        minHeight: '520px',
+        height: '100%',
+        minHeight: '380px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        userSelect: 'none'
+        justifyContent: 'center'
       }}
     >
-      {/* Dynamic Style Injection for Map Pop and Beacon Animations */}
-      <style>{`
-        .world-map-svg {
-          width: 100%;
-          height: auto;
-          display: block;
-          filter: drop-shadow(0 8px 24px rgba(15, 23, 42, 0.04));
-        }
+      <style jsx global>{`
+        /* Target SVG paths styling */
         .world-map-svg path {
-          fill: #e8effb;
+          fill: #e4e9f0;
           stroke: #ffffff;
-          stroke-width: 0.7;
-          transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                      fill 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                      filter 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                      stroke-width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-          transform-origin: center center;
+          stroke-width: 0.75;
+          transition: fill 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s ease;
           cursor: pointer;
         }
-        .world-map-svg path#us {
-          fill: #7392e2;
-        }
-        .world-map-svg path#au {
-          fill: #a5c4f7;
-        }
-        .world-map-svg path#de {
-          fill: #3b82f6;
-        }
-        .world-map-svg path#ae {
-          fill: #2563eb;
-        }
-        .world-map-svg path#in {
-          fill: #1d4ed8;
-        }
 
-        /* 3D POP OUT HOVER EFFECT FOR COUNTRY PATHS */
         .world-map-svg path:hover {
           fill: #0066FF !important;
-          stroke: #ffffff !important;
-          stroke-width: 1.8 !important;
-          filter: drop-shadow(0 10px 20px rgba(0, 102, 255, 0.45));
-          transform: translateY(-4px) scale(1.02);
+          filter: drop-shadow(0 4px 12px rgba(0, 102, 255, 0.4));
+        }
+
+        /* Key recommended markets highlighted in soft blue */
+        .world-map-svg path#us,
+        .world-map-svg path#de,
+        .world-map-svg path#ae,
+        .world-map-svg path#au {
+          fill: #7392e2;
         }
 
         /* Ping Ring Animation */
@@ -136,6 +141,7 @@ export default function WorldHeroMap() {
 
       {/* Mode Switcher Toggle */}
       <div
+        className="hero-map-mode-toggle"
         style={{
           position: 'absolute',
           top: '14px',
@@ -189,7 +195,7 @@ export default function WorldHeroMap() {
         <div
           style={{
             width: '100%',
-            height: '520px',
+            height: '420px',
             borderRadius: '20px',
             overflow: 'hidden',
             border: '1px solid #e2e8f0',
@@ -207,10 +213,10 @@ export default function WorldHeroMap() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            overflow: 'visible'
+            overflow: 'hidden'
           }}
         >
-          {/* Vector SVG World Map with Hover Interactions */}
+          {/* Vector SVG World Map */}
           <WorldSVGMap
             className="world-map-svg"
             onMouseOver={handleSvgMouseOver}
@@ -281,12 +287,11 @@ export default function WorldHeroMap() {
                   zIndex: isHovered ? 25 : 10
                 }}
               >
-                {/* Outer pulsing ring */}
                 <div
                   style={{
                     position: 'absolute',
-                    width: isHovered ? '42px' : '32px',
-                    height: isHovered ? '42px' : '32px',
+                    width: isHovered ? '36px' : '26px',
+                    height: isHovered ? '36px' : '26px',
                     borderRadius: '50%',
                     backgroundColor: pin.id === 'us' ? 'rgba(115, 146, 226, 0.55)' : 'rgba(0, 102, 255, 0.35)',
                     transformOrigin: 'center',
@@ -294,25 +299,21 @@ export default function WorldHeroMap() {
                   }}
                   className="map-ping-ring"
                 />
-
-                {/* Middle glow */}
                 <div
                   style={{
                     position: 'absolute',
-                    width: isHovered ? '18px' : '14px',
-                    height: isHovered ? '18px' : '14px',
+                    width: isHovered ? '16px' : '12px',
+                    height: isHovered ? '16px' : '12px',
                     borderRadius: '50%',
                     backgroundColor: pin.id === 'us' ? 'rgba(115, 146, 226, 0.8)' : 'rgba(0, 102, 255, 0.65)',
                     transition: 'all 0.2s ease'
                   }}
                 />
-
-                {/* Inner core dot */}
                 <div
                   style={{
                     position: 'absolute',
-                    width: isHovered ? '8px' : '6px',
-                    height: isHovered ? '8px' : '6px',
+                    width: isHovered ? '7px' : '5px',
+                    height: isHovered ? '7px' : '5px',
                     borderRadius: '50%',
                     backgroundColor: pin.id === 'us' ? '#ffffff' : '#0066FF',
                     boxShadow: '0 0 6px rgba(0, 0, 0, 0.3)',
@@ -326,12 +327,13 @@ export default function WorldHeroMap() {
           {/* 3 DEFAULT FLOATING CALLOUT CARDS */}
           {/* Card 1: Germany */}
           <div
+            className="hero-map-callout hero-map-callout-germany"
             style={{
               position: 'absolute',
               top: '38.5%',
               left: '53%',
               backgroundColor: '#ffffff',
-              padding: '7px 14px',
+              padding: '6px 12px',
               borderRadius: '9px',
               boxShadow: '0 4px 16px rgba(15, 23, 42, 0.08)',
               border: '1px solid rgba(226, 232, 240, 0.9)',
@@ -342,22 +344,23 @@ export default function WorldHeroMap() {
               pointerEvents: 'none'
             }}
           >
-            <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#090d16', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            <span className="hero-map-callout-title" style={{ fontSize: '12px', fontWeight: 800, color: '#090d16', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
               Germany
             </span>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#0066FF', lineHeight: 1.2 }}>
+            <span className="hero-map-callout-sub" style={{ fontSize: '10.5px', fontWeight: 600, color: '#0066FF', lineHeight: 1.2 }}>
               High demand
             </span>
           </div>
 
           {/* Card 2: United Arab Emirates */}
           <div
+            className="hero-map-callout hero-map-callout-uae"
             style={{
               position: 'absolute',
               top: '53.5%',
-              left: '65.5%',
+              left: '64.5%',
               backgroundColor: '#ffffff',
-              padding: '7px 14px',
+              padding: '6px 12px',
               borderRadius: '9px',
               boxShadow: '0 4px 16px rgba(15, 23, 42, 0.08)',
               border: '1px solid rgba(226, 232, 240, 0.9)',
@@ -369,22 +372,23 @@ export default function WorldHeroMap() {
               whiteSpace: 'nowrap'
             }}
           >
-            <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#090d16', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            <span className="hero-map-callout-title" style={{ fontSize: '12px', fontWeight: 800, color: '#090d16', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
               United Arab Emirates
             </span>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#0066FF', lineHeight: 1.2 }}>
+            <span className="hero-map-callout-sub" style={{ fontSize: '10.5px', fontWeight: 600, color: '#0066FF', lineHeight: 1.2 }}>
               Very high demand
             </span>
           </div>
 
           {/* Card 3: Australia */}
           <div
+            className="hero-map-callout hero-map-callout-aus"
             style={{
               position: 'absolute',
               top: '73%',
-              left: '72.5%',
+              left: '70.5%',
               backgroundColor: '#ffffff',
-              padding: '7px 14px',
+              padding: '6px 12px',
               borderRadius: '9px',
               boxShadow: '0 4px 16px rgba(15, 23, 42, 0.08)',
               border: '1px solid rgba(226, 232, 240, 0.9)',
@@ -395,10 +399,10 @@ export default function WorldHeroMap() {
               pointerEvents: 'none'
             }}
           >
-            <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#090d16', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            <span className="hero-map-callout-title" style={{ fontSize: '12px', fontWeight: 800, color: '#090d16', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
               Australia
             </span>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#0066FF', lineHeight: 1.2 }}>
+            <span className="hero-map-callout-sub" style={{ fontSize: '10.5px', fontWeight: 600, color: '#0066FF', lineHeight: 1.2 }}>
               High demand
             </span>
           </div>

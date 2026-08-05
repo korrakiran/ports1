@@ -1554,3 +1554,60 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Mobile Hero Map Stage & Callout Adjustments */
+@media (max-width: 640px) {
+  .hero-map-stage {
+    min-height: 280px !important;
+  }
+
+  .hero-map-mode-toggle {
+    top: 8px !important;
+    right: 8px !important;
+    padding: 3px !important;
+  }
+
+  .hero-map-mode-toggle button {
+    padding: 4px 8px !important;
+    font-size: 10.5px !important;
+  }
+
+  .hero-map-callout {
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12) !important;
+  }
+
+  .hero-map-callout-title {
+    font-size: 10px !important;
+  }
+
+  .hero-map-callout-sub {
+    font-size: 9px !important;
+  }
+
+  .hero-map-callout-germany {
+    left: 40% !important;
+    top: 36% !important;
+  }
+
+  .hero-map-callout-uae {
+    left: 46% !important;
+    top: 55% !important;
+  }
+
+  .hero-map-callout-aus {
+    left: 50% !important;
+    top: 74% !important;
+  }
+
+  .ld-mono-note {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px 8px !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    margin-top: 12px !important;
+  }
+}
+
+
