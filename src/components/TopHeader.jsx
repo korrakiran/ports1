@@ -12,11 +12,12 @@ import {
   LogOut,
   SlidersHorizontal,
   Globe2,
-  FileCheck
+  FileCheck,
+  Menu
 } from 'lucide-react';
 import { CURRENT_USER } from '../mockData';
 
-export default function TopHeader({ activeTab, onOpenNewDealModal, user, onSignOut }) {
+export default function TopHeader({ activeTab, onOpenNewDealModal, user, onSignOut, onToggleMobileMenu }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Customs Approved #TRX-44910', text: 'BioHerb Germany confirmed customs release.', read: false },
@@ -67,21 +68,39 @@ export default function TopHeader({ activeTab, onOpenNewDealModal, user, onSignO
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '0 24px',
+      padding: '0 16px',
       borderBottom: '1px solid #e2e8f0',
       position: 'sticky',
       top: 0,
-      zIndex: 40
+      zIndex: 40,
+      gap: '12px'
     }}>
-      {/* Left Branding & Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748b' }}>
+      {/* Left Branding / Hamburger & Breadcrumb */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <button 
+          onClick={onToggleMobileMenu}
+          className="mobile-only"
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#0f172a',
+            cursor: 'pointer',
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+          aria-label="Toggle menu"
+        >
+          <Menu size={22} />
+        </button>
+
+        <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
           {getBreadcrumb()}
         </span>
       </div>
 
       {/* Global Autocomplete Search Bar */}
-      <div style={{ position: 'relative', width: '380px' }}>
+      <div className="desktop-only" style={{ position: 'relative', width: '100%', maxWidth: '340px' }}>
         <Search style={{
           position: 'absolute',
           left: '12px',
@@ -91,7 +110,7 @@ export default function TopHeader({ activeTab, onOpenNewDealModal, user, onSignO
         }} size={16} />
         <input 
           type="text" 
-          placeholder="Search HS Code (e.g. 8518.30), product, or target market..." 
+          placeholder="Search HS Code, product..." 
           value={searchQuery}
           onChange={handleSearch}
           onFocus={() => searchQuery.length > 1 && setShowSearchDropdown(true)}
@@ -102,7 +121,7 @@ export default function TopHeader({ activeTab, onOpenNewDealModal, user, onSignO
             border: '1px solid #e2e8f0',
             borderRadius: '8px',
             paddingLeft: '36px',
-            paddingRight: '60px',
+            paddingRight: '12px',
             color: '#0f172a',
             fontSize: '13px',
             outline: 'none',

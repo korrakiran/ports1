@@ -30,7 +30,7 @@ export default function MarketIntelligenceView({ onExpressInterest }) {
   );
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="view-container">
       
       {/* Top Sticky Smart Filter Bar */}
       <div style={{
@@ -39,13 +39,14 @@ export default function MarketIntelligenceView({ onExpressInterest }) {
         borderRadius: '14px',
         padding: '14px 20px',
         display: 'flex',
+        flexWrap: 'wrap',
         alignItems: 'center',
         justifyContent: 'space-between',
         boxShadow: 'var(--shadow-sm)',
-        gap: '16px'
+        gap: '12px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-          <div style={{ position: 'relative', width: '280px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '280px', minWidth: '200px' }}>
             <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
             <input 
               type="text" 
@@ -64,25 +65,28 @@ export default function MarketIntelligenceView({ onExpressInterest }) {
             />
           </div>
 
-          {['All Categories', 'Agriculture', 'Renewables', 'Textiles', 'Engineering'].map((cat) => (
-            <button 
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: 600,
-                border: '1px solid',
-                borderColor: activeCategory === cat ? 'var(--accent-blue)' : 'var(--border-color)',
-                backgroundColor: activeCategory === cat ? 'var(--accent-blue-light)' : 'transparent',
-                color: activeCategory === cat ? 'var(--accent-blue)' : 'var(--text-muted)',
-                cursor: 'pointer'
-              }}
-            >
-              {cat}
-            </button>
-          ))}
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', maxWidth: '100%' }}>
+            {['All Categories', 'Agriculture', 'Renewables', 'Textiles', 'Engineering'].map((cat) => (
+              <button 
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  border: '1px solid',
+                  whiteSpace: 'nowrap',
+                  borderColor: activeCategory === cat ? 'var(--accent-blue)' : 'var(--border-color)',
+                  backgroundColor: activeCategory === cat ? 'var(--accent-blue-light)' : 'transparent',
+                  color: activeCategory === cat ? 'var(--accent-blue)' : 'var(--text-muted)',
+                  cursor: 'pointer'
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -93,7 +97,7 @@ export default function MarketIntelligenceView({ onExpressInterest }) {
       </div>
 
       {/* Main Grid: Interactive Map + Country Deep-Dive */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '24px' }}>
+      <div className="grid-main-side">
         
         {/* Global Interactive Heatmap */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '480px', padding: '16px' }}>

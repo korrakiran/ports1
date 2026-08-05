@@ -5,3 +5,17 @@ node_modules
 dist
 build
 .DS_Store
+
+# env
+.env
+.env.local
+
+# uploads
+/uploads
+
+# build artifacts
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# machine-local agent settings
+.claude/settings.local.json

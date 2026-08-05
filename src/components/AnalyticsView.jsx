@@ -23,10 +23,10 @@ export default function AnalyticsView() {
   ];
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="view-container">
       
       {/* Top Intelligence Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+      <div className="grid-3">
         <div className="card">
           <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Export Revenue (YTD)</div>
           <div style={{ fontSize: '24px', fontWeight: 800, marginTop: '2px' }}>$1,720,000</div>

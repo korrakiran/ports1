@@ -29,10 +29,10 @@ export default function TransactionsView() {
   ];
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="view-container">
       
       {/* Header Pipeline Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+      <div className="grid-4">
         <div className="card" style={{ borderLeft: '4px solid var(--accent-blue)' }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Contracting Phase</div>
           <div style={{ fontSize: '20px', fontWeight: 800, marginTop: '2px' }}>$168,000</div>
@@ -59,7 +59,7 @@ export default function TransactionsView() {
       </div>
 
       {/* Main Grid: Order Cards List (Left) + Detailed Guided Workflow Timeline (Right) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '24px' }}>
+      <div className="grid-main-side">
         
         {/* Left: Orders List */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>

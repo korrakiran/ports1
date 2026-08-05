@@ -34,17 +34,14 @@ export default function DashboardView({ onNavigate, onExpressInterest }) {
   ];
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="view-container">
       
       {/* Welcome Banner / Hero Bar */}
-      <div style={{
+      <div className="hero-banner" style={{
         background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
         borderRadius: '16px',
         padding: '24px 32px',
         color: '#ffffff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
         position: 'relative',
         overflow: 'hidden',
         boxShadow: 'var(--shadow-lg)'
@@ -62,7 +59,7 @@ export default function DashboardView({ onNavigate, onExpressInterest }) {
         }} />
 
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
             <span className="badge badge-blue" style={{ fontSize: '11px' }}>
               <Sparkles size={12} /> AI Trade Intelligence Engine Active
             </span>
@@ -78,7 +75,7 @@ export default function DashboardView({ onNavigate, onExpressInterest }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', zIndex: 2 }}>
+        <div className="hero-banner-buttons" style={{ display: 'flex', gap: '12px', zIndex: 2, flexWrap: 'wrap' }}>
           <button 
             onClick={() => onNavigate('intelligence')}
             className="btn btn-primary" 
@@ -97,7 +94,7 @@ export default function DashboardView({ onNavigate, onExpressInterest }) {
       </div>
 
       {/* KPI Cards (4 grid) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px' }}>
+      <div className="grid-4">
         
         {/* Active Listings */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -165,8 +162,8 @@ export default function DashboardView({ onNavigate, onExpressInterest }) {
 
       </div>
 
-      {/* Main Grid: 2 Columns (70% Opportunities & Pipeline, 30% Market Trends & Intelligence) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '24px' }}>
+      {/* Main Grid: 2 Columns (Opportunities & Pipeline on left, Market Trends on right on desktop; stacked on mobile) */}
+      <div className="grid-main-side">
         
         {/* Left Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>

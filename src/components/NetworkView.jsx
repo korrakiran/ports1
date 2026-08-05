@@ -24,16 +24,16 @@ export default function NetworkView({ onOpenChat }) {
   );
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="view-container">
       
       {/* Search Header */}
-      <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+      <div className="card" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
         <div>
           <h2 style={{ fontSize: '18px', fontWeight: 800 }}>Verified Global Trade Network</h2>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Directly message background-checked importers, distributors, & retailers</p>
         </div>
 
-        <div style={{ position: 'relative', width: '320px' }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: '320px' }}>
           <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
           <input 
             type="text" 
@@ -54,7 +54,7 @@ export default function NetworkView({ onOpenChat }) {
       </div>
 
       {/* Network Profiles Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+      <div className="grid-3">
         {filteredNetwork.map((profile) => (
           <div className="card" key={profile.id} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             
