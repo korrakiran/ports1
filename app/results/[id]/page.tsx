@@ -3,13 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ChevronDown, ChevronUp, Eye, Package } from 'lucide-react';
-import type { AnalysisResult } from '@shared/types';
+import { ArrowLeft, ChevronDown, ChevronUp, Eye, Globe, Package, X } from 'lucide-react';
+import type { AnalysisResult, MarketRecommendation } from '@shared/types';
 import AppHeader from '@/components/app/AppHeader';
 import MarketCard from '@/components/results/MarketCard';
 import MarketHeatMap from '@/components/results/MarketHeatMap';
 import AnalysisChat from '@/components/results/AnalysisChat';
-import { Alert, Button, DataNotice, Spinner } from '@/components/ui/primitives';
+import { Alert, Button, DataNotice, DemandBadge, Spinner } from '@/components/ui/primitives';
 import { formatShare, formatTradeValue } from '@/lib/format';
 import { analysisApi } from '@/lib/api';
 import { useRequireAuth } from '@/lib/auth-context';
@@ -22,6 +22,7 @@ export default function ResultsPage() {
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showRemaining, setShowRemaining] = useState(false);
+  const [selectedMarket, setSelectedMarket] = useState<{ market: MarketRecommendation; rank: number } | null>(null);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -247,11 +248,17 @@ export default function ResultsPage() {
                 <span className="eyebrow">Coverage</span>
                 <h2 className="section-title">Where demand appears</h2>
               </div>
-              <span className="muted">Hover a country for detail</span>
+              <span className="muted">Click or hover a country for detail</span>
             </div>
           </div>
           <div className="map-hero-canvas">
-            <MarketHeatMap recommendations={recommendations} />
+            <MarketHeatMap
+              recommendations={recommendations}
+              onSelect={(m) => {
+                const idx = recommendations.findIndex((r) => r.countryIso === m.countryIso);
+                setSelectedMarket({ market: m, rank: idx >= 0 ? idx + 1 : 1 });
+              }}
+            />
           </div>
         </section>
 
@@ -263,7 +270,7 @@ export default function ResultsPage() {
                 <span className="eyebrow">Start here</span>
                 <h2 className="section-title">Strongest matches</h2>
               </div>
-              <span className="muted">Ranked by 2024 import value</span>
+              <span className="muted">Click any card for country trade breakdown</span>
             </div>
 
             <div className="featured-grid">
@@ -273,6 +280,7 @@ export default function ResultsPage() {
                   market={m}
                   rank={i + 1}
                   variant={i === 0 ? 'featured' : 'default'}
+                  onClick={() => setSelectedMarket({ market: m, rank: i + 1 })}
                 />
               ))}
             </div>
@@ -330,7 +338,13 @@ export default function ResultsPage() {
               {showRemaining && (
                 <div className="market-grid fade-up">
                   {remaining.map((m, i) => (
-                    <MarketCard key={m.countryIso} market={m} rank={i + 4} variant="compact" />
+                    <MarketCard
+                      key={m.countryIso}
+                      market={m}
+                      rank={i + 4}
+                      variant="compact"
+                      onClick={() => setSelectedMarket({ market: m, rank: i + 4 })}
+                    />
                   ))}
                 </div>
               )}
@@ -381,6 +395,152 @@ export default function ResultsPage() {
           </div>
         </section>
       </div>
+
+      {/* ================= COUNTRY DETAIL MODAL ================= */}
+      {selectedMarket && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setSelectedMarket(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '560px',
+              width: '100%',
+              boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
+              border: '1px solid rgba(226, 232, 240, 0.8)',
+              overflow: 'hidden',
+              animation: 'fadeUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) both'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                padding: '20px 24px',
+                borderBottom: '1px solid var(--border-soft)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: '#f8fafc'
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Globe size={18} color="#0066FF" />
+                  <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#090d16', margin: 0 }}>
+                    {selectedMarket.market.country}
+                  </h3>
+                </div>
+                <div style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                  {selectedMarket.market.region} · #{selectedMarket.rank} Global Importer
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedMarket(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '6px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  color: '#64748b'
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body Statistics */}
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#475569' }}>
+                  Market Demand Level
+                </span>
+                <DemandBadge level={selectedMarket.market.demand} />
+              </div>
+
+              {/* Metric Cards Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ padding: '14px', borderRadius: '10px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Annual Trade Value
+                  </div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#0066FF', marginTop: '4px' }}>
+                    {formatTradeValue(selectedMarket.market.tradeValue)}
+                  </div>
+                </div>
+
+                <div style={{ padding: '14px', borderRadius: '10px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Global Market Rank
+                  </div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#090d16', marginTop: '4px' }}>
+                    #{selectedMarket.rank} Importer
+                  </div>
+                </div>
+
+                <div style={{ padding: '14px', borderRadius: '10px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Share of Country Imports
+                  </div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#090d16', marginTop: '4px' }}>
+                    {formatShare(selectedMarket.market.sharePct)}
+                  </div>
+                </div>
+
+                <div style={{ padding: '14px', borderRadius: '10px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Total Economy Imports
+                  </div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#090d16', marginTop: '4px' }}>
+                    {formatTradeValue(selectedMarket.market.totalImports)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Trade Category Context */}
+              <div style={{ padding: '14px 16px', borderRadius: '10px', backgroundColor: 'rgba(0, 102, 255, 0.05)', border: '1px solid rgba(0, 102, 255, 0.15)' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#0066FF', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Product Category
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#090d16', marginTop: '2px' }}>
+                  {selectedMarket.market.hs4}
+                </div>
+                <div style={{ fontSize: '12.5px', color: '#475569', marginTop: '4px', lineHeight: 1.4 }}>
+                  {selectedMarket.market.country} represents active import demand for this product category based on official UN Comtrade and CEPII BACI customs data.
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div
+              style={{
+                padding: '16px 24px',
+                borderTop: '1px solid var(--border-soft)',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                backgroundColor: '#f8fafc'
+              }}
+            >
+              <Button onClick={() => setSelectedMarket(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,23 +6,29 @@ import { DemandBadge } from '@/components/ui/primitives';
 import { formatShare, formatTradeValue } from '@/lib/format';
 
 /**
- * One recommended import market.
- * Displays global market rank (#1, #2, etc.), trade value, demand level, and import share.
+ * One recommended import market card.
+ * Clicking the card triggers the onClick handler to view full market details.
  */
 export default function MarketCard({
   market,
   rank,
-  variant = 'default'
+  variant = 'default',
+  onClick
 }: {
   market: MarketRecommendation;
   rank: number;
   variant?: 'featured' | 'default' | 'compact';
+  onClick?: () => void;
 }) {
   const positionLabel = String(rank).padStart(2, '0');
 
   if (variant === 'compact') {
     return (
-      <article className="market-card market-card--compact">
+      <article
+        className="market-card market-card--compact"
+        onClick={onClick}
+        style={{ cursor: onClick ? 'pointer' : 'default' }}
+      >
         <div className="row row-sm" style={{ minWidth: 0 }}>
           <span className="market-rank">{positionLabel}</span>
           <div style={{ minWidth: 0 }}>
@@ -38,7 +44,11 @@ export default function MarketCard({
   const featured = variant === 'featured';
 
   return (
-    <article className={`market-card ${featured ? 'market-card--featured' : ''} fade-up`}>
+    <article
+      className={`market-card ${featured ? 'market-card--featured' : ''} fade-up`}
+      onClick={onClick}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+    >
       <div>
         <span className="market-rank">{positionLabel}</span>
         <h3 className="market-country" style={{ marginTop: 5 }}>
