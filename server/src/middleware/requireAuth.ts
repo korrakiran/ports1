@@ -26,12 +26,17 @@ export async function requireAuth(
     return;
   }
 
-  const exists = await User.exists({ _id: userId });
-  if (!exists) {
-    res.status(401).json({ error: 'Account no longer exists.' });
-    return;
-  }
+  try {
+    const exists = await User.exists({ _id: userId });
+    if (!exists) {
+      res.status(401).json({ error: 'Account no longer exists.' });
+      return;
+    }
 
-  req.userId = userId;
-  next();
+    req.userId = userId;
+    next();
+  } catch (err) {
+    console.error('[requireAuth] Database lookup error:', err);
+    res.status(401).json({ error: 'Session expired or database unavailable. Please log in again.' });
+  }
 }
