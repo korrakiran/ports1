@@ -91,6 +91,8 @@ export interface AnalysisListItem {
   createdAt: string;
   category: string | null;
   marketCount: number;
+  /** Saved before the OEC trade dataset — needs re-running to show figures. */
+  legacy?: boolean;
 }
 
 export const analysisApi = {

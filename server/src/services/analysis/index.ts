@@ -62,7 +62,7 @@ export async function runAnalysis(input: AnalysisInput): Promise<AnalysisResult>
     summary,
     vision: visionResult,
     visionError,
-    disclaimer: repo.disclaimer()
+    dataNotice: repo.dataNotice()
   };
 }
 

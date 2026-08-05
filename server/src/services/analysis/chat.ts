@@ -1,16 +1,14 @@
-import type { AnalysisResult, ChatMessage, MarketRecommendation } from '@shared/types';
+import { DATA_SOURCE, type AnalysisResult, type ChatMessage, type MarketRecommendation } from '@shared/types';
+import { formatShare, formatTradeValue } from '../trade/demand.js';
 import { normalise } from './tokens.js';
 
 /**
  * The results-page assistant.
  *
- * This is intent matching over the analysis that was already produced — not a
- * language model. It can only answer from the recommendations in hand, and when
- * it cannot answer it says so rather than improvising. That honesty is the point:
- * a prototype assistant that bluffs would put invented trade claims in front of
- * users.
- *
- * Prototype demo dataset. Replace with production trade data.
+ * Answers are composed from the recommendations already computed for this
+ * analysis — every number quoted traces back to global_imports_hs4.csv. It is
+ * intent matching, not a language model, and when it cannot answer from the
+ * data it says so rather than improvising.
  */
 
 function list(items: string[]): string {
@@ -27,9 +25,19 @@ function findCountry(
   return recommendations.find((r) => q.includes(normalise(r.country)));
 }
 
+/** The canonical explanation for one market, built entirely from its figures. */
+function explain(m: MarketRecommendation): string {
+  return (
+    `${m.country} imported ${formatTradeValue(m.tradeValue)} of ${m.hs4} in ${DATA_SOURCE.year}. ` +
+    `It ranked #${m.rank} among the ${m.productCount.toLocaleString()} HS4 import categories ${m.country} records, ` +
+    `and represented ${formatShare(m.sharePct)} of its ${formatTradeValue(m.totalImports)} in total imports. ` +
+    `Based on that rank and share, PortsAI classifies this as ${m.demand} Demand.`
+  );
+}
+
 const CAPABILITIES =
-  'I can tell you which markets matched, why a particular country is on the list, ' +
-  'which are premium versus growing, and what to prepare before approaching a buyer.';
+  'I can explain why a market is on your list, what it imported and how that ranks, ' +
+  'which markets show the strongest demand, and what to prepare before approaching a buyer.';
 
 export function answerQuestion(question: string, analysis: AnalysisResult): ChatMessage {
   const q = normalise(question);
@@ -39,100 +47,105 @@ export function answerQuestion(question: string, analysis: AnalysisResult): Chat
     return {
       role: 'assistant',
       content:
-        'This analysis did not match anything in the demo dataset, so I have no markets to discuss. ' +
-        'Try running the analysis again with a plainer product description — for example "cotton bed linen" or "leather wallet".'
+        'This analysis did not match an HS4 category in the 2024 trade data, so I have no markets to discuss. ' +
+        'Try re-running it with a plainer product description — for example "cotton shirts" or "leather handbags".'
     };
   }
 
   /* --- A specific country --- */
   const country = findCountry(question, recs);
   if (country) {
+    return { role: 'assistant', content: explain(country), sources: [country.country] };
+  }
+
+  /* --- Why this product / why recommended / why is demand high --- */
+  if (/^why|why /.test(q) || /recommend|explain|reason|how did you/.test(q)) {
+    const top = recs[0];
     return {
       role: 'assistant',
       content:
-        `${country.country} is on your list because the demo dataset has entries for ${list(
-          country.matchedProducts.map((p) => p.toLowerCase())
-        )} there. ` +
-        `Demand is recorded as ${country.demand.toLowerCase()} and the market is described as a ${country.marketType.toLowerCase()}. ` +
-        country.notes[0],
-      sources: country.matchedProducts
+        `${explain(top)} ` +
+        `The same calculation is applied to every country that imports ${top.hs4}, and the list is ordered by ${DATA_SOURCE.year} trade value.`,
+      sources: [top.country]
     };
   }
 
-  /* --- Premium / high-end --- */
-  if (/premium|high end|luxury|upmarket/.test(q)) {
-    const premium = recs.filter((r) => r.marketType === 'Premium Market');
-    return {
-      role: 'assistant',
-      content: premium.length
-        ? `The markets flagged as premium for your product are ${list(premium.map((r) => r.country))}. ` +
-          'Premium here means buyers weigh finish, consistency and documentation over unit price — expect sampling and certification requests before any order.'
-        : 'None of your matched markets are flagged as premium in the demo dataset. They are mostly volume, niche or hub markets.',
-      sources: premium.map((r) => r.country)
-    };
-  }
-
-  /* --- Growing / emerging --- */
-  if (/growing|emerging|new market|early/.test(q)) {
-    const growing = recs.filter((r) => r.demand === 'Growing' || r.demand === 'Emerging');
-    return {
-      role: 'assistant',
-      content: growing.length
-        ? `${list(growing.map((r) => r.country))} ${growing.length === 1 ? 'is' : 'are'} marked as growing or emerging for this category. ` +
-          'These usually mean less entrenched competition but longer sales cycles, and they reward distributors who can hold stock locally.'
-        : 'Your matched markets are all recorded at established demand levels rather than growing or emerging.',
-      sources: growing.map((r) => r.country)
-    };
-  }
-
-  /* --- Best / where to start --- */
-  if (/best|start|first|top|recommend|which country|where should/.test(q)) {
+  /* --- Strongest demand --- */
+  if (/strong|high|best|top|start|first|which country|where should|biggest|largest/.test(q)) {
     const top = recs.slice(0, 3);
     return {
       role: 'assistant',
       content:
-        `Based on the dataset entries, ${list(top.map((r) => r.country))} matched most strongly. ` +
-        `${top[0].country} is recorded at ${top[0].demand.toLowerCase()} demand as a ${top[0].marketType.toLowerCase()}. ` +
+        `By ${DATA_SOURCE.year} import value, the largest markets for ${top[0].hs4} on your list are ` +
+        `${list(top.map((r) => `${r.country} (${formatTradeValue(r.tradeValue)}, ${r.demand.toLowerCase()} demand)`))}. ` +
         'I would shortlist two of these rather than approaching all of them — export effort spreads thin very quickly.',
       sources: top.map((r) => r.country)
     };
   }
 
-  /* --- Documentation, certification, compliance --- */
+  /* --- Share / rank questions --- */
+  if (/share|rank|percent|percentage|proportion|position/.test(q)) {
+    const top = recs.slice(0, 5);
+    return {
+      role: 'assistant',
+      content:
+        `Share and rank for ${top[0].hs4}: ` +
+        list(top.map((r) => `${r.country} — #${r.rank}, ${formatShare(r.sharePct)} of total imports`)) +
+        '. Rank is measured against every HS4 category that country imports.',
+      sources: top.map((r) => r.country)
+    };
+  }
+
+  /* --- Smaller / emerging markets --- */
+  if (/small|niche|emerging|growing|less competitive|new market/.test(q)) {
+    const tail = recs.filter((r) => r.demand === 'Low' || r.demand === 'Niche' || r.demand === 'Moderate');
+    return {
+      role: 'assistant',
+      content: tail.length
+        ? `${list(tail.slice(0, 4).map((r) => `${r.country} (${formatTradeValue(r.tradeValue)}, ${r.demand.toLowerCase()} demand)`))} ` +
+          'import this category at a lower rank or share. Smaller absolute volume often means less entrenched competition, but also longer sales cycles.'
+        : 'Every market on your list registers moderate demand or above for this category — none of them fall into the low or niche band.',
+      sources: tail.slice(0, 4).map((r) => r.country)
+    };
+  }
+
+  /* --- Documentation, certification, tariffs --- */
   if (/certif|document|complian|standard|test|label|paperwork|hs code|customs|duty|tariff/.test(q)) {
     return {
       role: 'assistant',
       content:
-        'This prototype does not carry certification or tariff data, so I will not guess at specifics. ' +
-        'What holds generally: confirm your HS classification with a customs broker first, since duty treatment and documentation both follow from it; ' +
-        'prepare a specification sheet covering materials, dimensions and packaging; and check destination-specific product certification early, because testing is usually the longest lead item. ' +
+        'This dataset covers import values only — it carries no tariff, certification or duty information, so I will not guess at specifics. ' +
+        'What holds generally: confirm your full HS classification with a customs broker first, since duty treatment and documentation both follow from it and HS4 is only the first four digits; ' +
+        'prepare a specification sheet covering materials, dimensions and packaging; and check destination-specific certification early, because testing is usually the longest lead item. ' +
         'Verify all of it against the destination customs authority before you quote.'
     };
   }
 
-  /* --- Shipping / logistics --- */
+  /* --- Shipping --- */
   if (/ship|freight|logistic|courier|container|deliver/.test(q)) {
     return {
       role: 'assistant',
       content:
-        'The prototype has no freight or routing data, so I cannot give you lead times or costs. ' +
+        'This dataset has no freight or routing data, so I cannot give you lead times or costs. ' +
         'Practically: ask two or three freight forwarders for indicative routing to your shortlisted markets, and decide early whether you are quoting ex-works, FOB or CIF — buyers will ask, and it changes your price.'
     };
   }
 
+  /* --- Data provenance --- */
+  if (/data|source|where.*from|accurate|reliable|when|year|up to date/.test(q)) {
+    return { role: 'assistant', content: DATA_SOURCE.notice };
+  }
+
   /* --- Summary --- */
-  if (/summar|overview|explain|what did|result/.test(q)) {
-    return {
-      role: 'assistant',
-      content: `${analysis.summary.headline}. ${analysis.summary.paragraphs[0]}`
-    };
+  if (/summar|overview|result|what did/.test(q)) {
+    return { role: 'assistant', content: `${analysis.summary.headline}. ${analysis.summary.paragraphs[0]}` };
   }
 
   /* --- Honest fallback --- */
   return {
     role: 'assistant',
     content:
-      `I could not map that to the analysis. ${CAPABILITIES} ` +
+      `I could not map that to this analysis. ${CAPABILITIES} ` +
       `Your matched markets are ${list(recs.slice(0, 5).map((r) => r.country))}${
         recs.length > 5 ? ` and ${recs.length - 5} more` : ''
       }.`

@@ -1,18 +1,21 @@
 import type { TradeRepository } from './TradeRepository.js';
-import { JsonTradeRepository } from './JsonTradeRepository.js';
+import { CsvTradeRepository } from './CsvTradeRepository.js';
 
 /**
  * The one place that decides where trade data comes from.
  *
- * To move off the prototype dataset, implement `TradeRepository` against the real
- * source and return it here. Nothing else in the codebase refers to
- * `JsonTradeRepository` by name.
+ * Currently global_imports_hs4.csv (OEC / CEPII BACI, 2024). To move to a live
+ * trade API, implement `TradeRepository` against it and return it here —
+ * nothing else in the codebase names a concrete implementation.
+ *
+ * There is no fallback dataset. If the CSV cannot be read the request fails
+ * loudly rather than silently serving something else.
  */
 let instance: TradeRepository | undefined;
 
 export function getTradeRepository(): TradeRepository {
-  instance ??= new JsonTradeRepository();
+  instance ??= new CsvTradeRepository();
   return instance;
 }
 
-export type { TradeRepository };
+export type { TradeRepository, Hs4Match } from './TradeRepository.js';

@@ -1,29 +1,44 @@
-import type { CountryMeta, TradeRecord } from '@shared/types';
+import type { CountryTotals, MarketRecommendation } from '@shared/types';
+
+/** One HS4 category as matched from a free-text product description. */
+export interface Hs4Match {
+  hs4Id: string;
+  hs4: string;
+  /** Relative match strength. Ordering only — never shown to the user. */
+  score: number;
+  /** Query terms that hit this description. */
+  matched: string[];
+}
 
 /**
  * The single boundary between PortsAI and its trade data source.
  *
- * Everything above this interface (matching, summaries, chat, the entire
- * frontend) is written against these four methods only. Connecting a real trade
- * dataset later means writing one new class that implements this interface and
- * changing the factory in `./index.ts` — no route, service or component changes.
+ * Everything above this interface — matching, summaries, chat, the frontend —
+ * is written against these methods only. Swapping the CSV for a live trade API
+ * later means one new class and one line in `./index.ts`.
  *
- * The current implementation is backed by a PROTOTYPE DEMO DATASET.
- * Prototype demo dataset. Replace with production trade data.
+ * The current implementation reads global_imports_hs4.csv (OEC / CEPII BACI,
+ * 2024, 226 countries, 232,930 HS4 import records).
  */
 export interface TradeRepository {
-  /** All records. Callers must treat the result as read-only. */
-  all(): Promise<readonly TradeRecord[]>;
+  /** HS4 categories whose description matches the supplied search terms. */
+  searchProducts(terms: string[], limit?: number): Promise<Hs4Match[]>;
 
-  /** Records whose product name, category or keywords match any of the terms. */
-  search(terms: string[]): Promise<readonly TradeRecord[]>;
+  /**
+   * Importing countries for an HS4 category, ranked by 2024 trade value.
+   * Rank, share and demand are computed per country at read time.
+   */
+  marketsForProduct(hs4Id: string, limit?: number): Promise<MarketRecommendation[]>;
 
-  /** Country metadata (ISO code, centroid, region) by name. */
-  country(name: string): Promise<CountryMeta | undefined>;
+  /** A country's largest imports by trade value, with rank, share and demand. */
+  topImportsForCountry(iso3: string, limit?: number): Promise<MarketRecommendation[]>;
 
-  /** All known countries. */
-  countries(): Promise<readonly CountryMeta[]>;
+  /** Totals for one country, or undefined if it is not in the dataset. */
+  country(iso3: string): Promise<CountryTotals | undefined>;
 
-  /** Human-readable provenance, surfaced in the UI next to any result. */
-  disclaimer(): string;
+  /** Every country in the dataset. */
+  countries(): Promise<readonly CountryTotals[]>;
+
+  /** Provenance text, surfaced in the UI alongside any figure derived from it. */
+  dataNotice(): string;
 }

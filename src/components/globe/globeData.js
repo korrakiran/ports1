@@ -1,10 +1,11 @@
 /**
- * Curated illustrative market set for the PortsAI hero globe.
+ * Fixed example country set for the PortsAI hero globe — a landing-page visual,
+ * not analysis output. Real recommendations come from global_imports_hs4.csv.
  *
  * These are VISUAL EXAMPLES that demonstrate the kind of output a user receives
- * after analyzing their own product. They are deliberately qualitative:
- * no scores, percentages, rankings or volumes are shown anywhere, because
- * PortsAI does not have live per-country demand data.
+ * after analyzing their own product. They carry qualitative labels only — the
+ * real trade values, ranks and shares are computed per analysis from
+ * global_imports_hs4.csv and shown on the results page.
  *
  * Countries are joined to the Natural Earth GeoJSON on `ADM0_A3`, not ISO_A2/ISO_A3 —
  * Natural Earth codes France, Norway and Kosovo as -99 in those fields.

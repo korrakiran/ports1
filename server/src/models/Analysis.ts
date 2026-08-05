@@ -8,8 +8,9 @@ import type { AnalysisResult } from '@shared/types';
  * document, so a user's history can grow without bumping into the BSON document
  * size limit and can be paged independently.
  *
- * The stored `result` originates from the PROTOTYPE DEMO DATASET.
- * Prototype demo dataset. Replace with production trade data.
+ * The stored `result` is a snapshot of figures computed from
+ * global_imports_hs4.csv at the time the analysis ran, so a past analysis stays
+ * reproducible even after the dataset is refreshed.
  */
 export interface AnalysisDocument extends Document {
   userId: mongoose.Types.ObjectId;

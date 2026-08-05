@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Check, FileText, Link2, Sparkles, X } from 'lucide-react';
 import AppHeader from '@/components/app/AppHeader';
 import ImageDropzone, { type PreviewFile } from '@/components/analyze/ImageDropzone';
-import { Alert, Button, Field, PrototypeNotice, Spinner } from '@/components/ui/primitives';
+import { Alert, Button, DataNotice, Field, Spinner } from '@/components/ui/primitives';
 import { useRequireAuth } from '@/lib/auth-context';
 import { setPendingAnalysis } from '@/lib/pending-analysis';
 
@@ -301,7 +301,7 @@ export default function AnalyzePage() {
                   </p>
                 </div>
 
-                <PrototypeNotice text="Replace with production trade data. Your images are read by a vision model and combined with your description to match against a fixed demo dataset — the resulting markets are illustrative, not live trade statistics." />
+                <DataNotice />
               </aside>
             </div>
           </div>

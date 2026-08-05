@@ -6,7 +6,7 @@ import { LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/primitives';
 
-/** Shared header for the signed-in prototype screens. */
+/** Shared header for the signed-in screens. */
 export default function AppHeader() {
   const { user, logout } = useAuth();
 

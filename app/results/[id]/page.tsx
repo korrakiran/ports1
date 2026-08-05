@@ -9,7 +9,8 @@ import AppHeader from '@/components/app/AppHeader';
 import MarketCard from '@/components/results/MarketCard';
 import MarketHeatMap from '@/components/results/MarketHeatMap';
 import AnalysisChat from '@/components/results/AnalysisChat';
-import { Alert, Button, PrototypeNotice, Spinner } from '@/components/ui/primitives';
+import { Alert, Button, DataNotice, Spinner } from '@/components/ui/primitives';
+import { formatShare, formatTradeValue } from '@/lib/format';
 import { analysisApi } from '@/lib/api';
 import { useRequireAuth } from '@/lib/auth-context';
 
@@ -61,6 +62,45 @@ export default function ResultsPage() {
   if (!analysis) return null;
 
   const { understanding, recommendations, summary } = analysis;
+
+  /**
+   * Analyses are stored as denormalised snapshots, so records saved before the
+   * OEC trade dataset was integrated still carry the old shape — no HS4
+   * category and no trade figures. Those results were derived from a dataset
+   * that no longer exists, so they are offered for re-run rather than rendered
+   * as though they were trade data.
+   */
+  const isLegacy =
+    !Array.isArray(understanding?.matchedProducts) ||
+    recommendations.some((r) => typeof r?.tradeValue !== 'number');
+
+  if (isLegacy) {
+    return (
+      <div className="page-shell">
+        <AppHeader />
+        <main className="app-main app-main--narrow stack stack-lg">
+          <Link href="/analyze" className="row row-sm muted" style={{ textDecoration: 'none' }}>
+            <ArrowLeft size={15} /> Analyze another product
+          </Link>
+          <h1 className="page-title">This analysis needs re-running</h1>
+          <DataNotice />
+          <div className="card stack stack-md">
+            <p className="prose">
+              It was saved before PortsAI moved onto 2024 OEC trade data, so it has no import
+              values, rankings or shares behind it. Rather than show you figures we can no longer
+              stand behind, we would rather you ran it again.
+            </p>
+            <p className="prose">
+              Your original description was:{' '}
+              <strong>{analysis.input?.description ?? 'not recorded'}</strong>
+            </p>
+            <Button onClick={() => router.push('/analyze')}>Run this analysis again</Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   const featured = recommendations.slice(0, 3);
   const remaining = recommendations.slice(3);
 
@@ -74,7 +114,7 @@ export default function ResultsPage() {
             <ArrowLeft size={15} /> Analyze another product
           </Link>
           <h1 className="page-title">{summary.headline}</h1>
-          <PrototypeNotice />
+          <DataNotice />
           <div className="card stack stack-md">
             {summary.paragraphs.map((p, i) => (
               <p key={i} className="prose">
@@ -110,30 +150,45 @@ export default function ResultsPage() {
                 <h1 className="page-title">{summary.headline}</h1>
                 <p className="page-subtitle">{analysis.input.description}</p>
                 <div style={{ maxWidth: '52ch' }}>
-                  <PrototypeNotice />
+                  <DataNotice />
                 </div>
               </div>
 
               {/* Facts rail — what was understood, as discrete rows */}
               <div className="result-facts">
                 <div className="result-fact">
-                  <span className="eyebrow">Category</span>
-                  <div className="result-fact-value">{understanding.category}</div>
-                </div>
-                <div className="result-fact">
-                  <span className="eyebrow">Closest catalogue entry</span>
+                  <span className="eyebrow">HS4 category</span>
                   <div className="result-fact-value">
-                    {understanding.closestProducts[0] ?? '—'}
+                    {understanding.matchedProducts[0]?.hs4 ?? '—'}
                   </div>
                   <div className="muted" style={{ marginTop: 4 }}>
-                    The demo-catalogue product yours matched most closely. Every market
-                    below comes from this entry — if it looks wrong, reword your
-                    description and run it again.
+                    The trade category your description resolved to. Every market below is
+                    ranked by its 2024 imports of this category — if it looks wrong, reword
+                    your description and run it again.
                   </div>
                 </div>
+                {understanding.matchedProducts.length > 1 && (
+                  <div className="result-fact">
+                    <span className="eyebrow">Also considered</span>
+                    <div className="row row-wrap" style={{ gap: 5, marginTop: 8 }}>
+                      {understanding.matchedProducts.slice(1, 4).map((p) => (
+                        <span key={p.hs4Id} className="chip">
+                          {p.hs4}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="result-fact">
-                  <span className="eyebrow">Markets matched</span>
-                  <div className="result-fact-value">{recommendations.length}</div>
+                  <span className="eyebrow">Largest market</span>
+                  <div className="result-fact-value">
+                    {recommendations[0].country} · {formatTradeValue(recommendations[0].tradeValue)}
+                  </div>
+                  <div className="muted" style={{ marginTop: 4 }}>
+                    #{recommendations[0].rank} of{' '}
+                    {recommendations[0].productCount.toLocaleString()} categories it imports,{' '}
+                    {formatShare(recommendations[0].sharePct)} of total imports.
+                  </div>
                 </div>
                 {analysis.vision && (
                   <div className="result-fact">
@@ -205,9 +260,7 @@ export default function ResultsPage() {
                 <span className="eyebrow">Start here</span>
                 <h2 className="section-title">Strongest matches</h2>
               </div>
-              <span className="muted">
-                Ranked by how closely the dataset entry matched your product
-              </span>
+              <span className="muted">Ranked by 2024 import value</span>
             </div>
 
             <div className="featured-grid">

@@ -4,14 +4,15 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { MarketRecommendation } from '@shared/types';
 import WorldSVGMap from '@/components/WorldSVGMap';
 import { demandFill } from '@/components/ui/primitives';
+import { formatShare, formatTradeValue } from '@/lib/format';
 
 /**
  * Choropleth of the matched markets.
  *
  * Only countries that actually matched are painted; everything else stays
  * neutral. There is no interpolated "heat" across the rest of the world, because
- * the prototype has no data for those countries — an empty map region means
- * "not matched", not "low demand".
+ * the dataset has no import record for that product there — an empty map region
+ * means "not matched", not "low demand".
  */
 export default function MarketHeatMap({
   recommendations,
@@ -115,7 +116,7 @@ export default function MarketHeatMap({
           className="map-tip-meta"
           style={{ color: hovered ? demandFill(hovered.demand) : undefined }}
         >
-          {hovered ? `${hovered.demand} demand · ${hovered.marketType}` : ''}
+          {hovered ? `${hovered.demand} demand · ${formatTradeValue(hovered.tradeValue)}` : ''}
         </div>
       </div>
 
@@ -127,7 +128,7 @@ export default function MarketHeatMap({
           borderTop: '1px solid var(--border-subtle)'
         }}
       >
-        {(['Very High', 'High', 'Medium', 'Growing', 'Emerging'] as const)
+        {(['Very High', 'High', 'Moderate', 'Low', 'Niche'] as const)
           .filter((level) => recommendations.some((r) => r.demand === level))
           .map((level) => (
             <span key={level} className="row row-sm" style={{ fontSize: 11.5, color: '#475569' }}>

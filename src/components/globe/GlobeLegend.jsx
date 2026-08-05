@@ -4,8 +4,8 @@ import React from 'react';
 import { LEGEND_ITEMS } from './globeData';
 
 /**
- * Colour key + the disclaimer that these markets are illustrative examples,
- * not analysis output.
+ * Colour key for the hero globe. These are fixed example countries used as a
+ * visual, not analysis output — real recommendations come from the trade data.
  */
 export default function GlobeLegend() {
   return (
@@ -60,7 +60,7 @@ export default function GlobeLegend() {
         color: '#94a3b8',
         lineHeight: 1.45
       }}>
-        Illustrative example of the output you receive after analyzing a product.
+        Example countries shown as a visual. Your own results are computed from 2024 trade data.
       </div>
     </div>
   );

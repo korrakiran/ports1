@@ -9,7 +9,7 @@ import { analysisApi } from '@/lib/api';
 import { takePendingAnalysis } from '@/lib/pending-analysis';
 
 /**
- * Step labels describe what the prototype actually does.
+ * Step labels describe what the pipeline actually does.
  *
  * The image step only appears when images were attached, and HS-code prediction
  * is never claimed because it is not implemented — a progress screen that

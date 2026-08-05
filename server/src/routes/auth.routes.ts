@@ -141,7 +141,9 @@ router.get(
         description: a.description,
         createdAt: a.createdAt.toISOString(),
         marketCount: a.result?.recommendations?.length ?? 0,
-        category: a.result?.understanding?.category ?? null
+        category: a.result?.understanding?.matchedProducts?.[0]?.hs4 ?? null,
+        // Saved before the OEC dataset was integrated — no trade figures behind it.
+        legacy: !Array.isArray(a.result?.understanding?.matchedProducts)
       }))
     });
   })

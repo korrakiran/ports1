@@ -98,12 +98,14 @@ export default function AccountPage() {
                       <div className="analysis-meta">
                         <span className="analysis-fact">
                           <span className="eyebrow">Category</span>
-                          <span className="analysis-value">{a.category ?? 'No match'}</span>
+                          <span className="analysis-value">
+                            {a.legacy ? 'Needs re-run' : (a.category ?? 'No match')}
+                          </span>
                         </span>
                         <span className="analysis-fact">
                           <span className="eyebrow">Markets</span>
                           <span className="analysis-value">
-                            {a.marketCount === 0 ? 'None' : a.marketCount}
+                            {a.legacy ? '—' : a.marketCount === 0 ? 'None' : a.marketCount}
                           </span>
                         </span>
                         <span className="analysis-fact">

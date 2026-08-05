@@ -1,59 +1,75 @@
 /**
  * Domain types shared by the Express API and the Next.js frontend.
  *
- * The trade data behind these types currently comes from a PROTOTYPE DEMO DATASET
- * (`/data/trade-demo.json`). Prototype demo dataset. Replace with production trade data.
+ * Trade data comes from `global_imports_hs4.csv` — 2024 import records from the
+ * Observatory of Economic Complexity (OEC), powered by the CEPII BACI trade
+ * database, derived from official UN Comtrade customs data. 226 countries and
+ * territories, 232,930 HS4-level records.
  *
- * Note what is deliberately absent: there is no field anywhere for a percentage,
- * import value, tariff rate, profit margin or ranking score. Demand and market
- * positioning are expressed only as qualitative labels, because the prototype has
- * no real trade statistics to back a number.
+ * Every figure surfaced to a user (trade value, rank, share, demand level) is
+ * computed from that file at request time. Nothing is hardcoded.
  */
+
+export const DATA_SOURCE = {
+  file: 'global_imports_hs4.csv',
+  year: 2024,
+  provider: 'Observatory of Economic Complexity (OEC)',
+  database: 'CEPII BACI (HS 2022 / HS4)',
+  origin: 'official UN Comtrade customs data',
+  notice:
+    'Our recommendations are based on 2024 international trade data from the Observatory of ' +
+    'Economic Complexity (OEC), powered by the CEPII BACI trade database derived from official ' +
+    'UN Comtrade customs data. The dataset covers 226 countries and territories and more than ' +
+    '232,000 HS4-level import records. This is historical trade data for 2024 and should be ' +
+    'interpreted as trade intelligence rather than real-time market activity.'
+} as const;
+
+/* ------------------------------------------------------------------ */
+/* Demand                                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Demand levels, strongest first.
+ *
+ * Assigned by `classifyDemand` from a product's rank and import share within a
+ * given country — never stored, never hardcoded.
+ */
+export const DEMAND_LEVELS = ['Very High', 'High', 'Moderate', 'Low', 'Niche'] as const;
+export type DemandLevel = (typeof DEMAND_LEVELS)[number];
 
 /* ------------------------------------------------------------------ */
 /* Trade data                                                          */
 /* ------------------------------------------------------------------ */
 
-export const DEMAND_LEVELS = ['Very High', 'High', 'Medium', 'Growing', 'Emerging'] as const;
-export type DemandLevel = (typeof DEMAND_LEVELS)[number];
-
-export const MARKET_TYPES = [
-  'Premium Market',
-  'Volume Market',
-  'Niche Market',
-  'Manufacturing Hub',
-  'Re-export Hub'
-] as const;
-export type MarketType = (typeof MARKET_TYPES)[number];
-
-/** One row of the prototype dataset. */
+/** One row of global_imports_hs4.csv, with codes resolved. */
 export interface TradeRecord {
-  id: string;
+  /** OEC country id, e.g. "asind" — region prefix + ISO-3166 alpha-3. */
+  countryId: string;
   country: string;
-  country_iso: string;
-  product: string;
-  category: string;
-  keywords: string[];
-  demand: DemandLevel;
-  market_type: MarketType;
-  notes: string;
-}
-
-export interface CountryMeta {
-  name: string;
   iso3: string;
   /** Lowercase ISO-3166 alpha-2 — the key the results heat map paints on. */
   iso2: string;
-  lat: number;
-  lng: number;
   region: string;
+  hs4Id: string;
+  /** HS4 product description, e.g. "Electrical Machinery". */
+  hs4: string;
+  tradeValue: number;
+}
+
+export interface CountryTotals {
+  country: string;
+  iso3: string;
+  iso2: string;
+  region: string;
+  /** Sum of every HS4 import value for this country. */
+  totalImports: number;
+  productCount: number;
 }
 
 /* ------------------------------------------------------------------ */
 /* Analysis                                                            */
 /* ------------------------------------------------------------------ */
 
-/** What the user submitted for analysis. */
 export interface ProductInput {
   description: string;
   productUrl?: string;
@@ -61,45 +77,47 @@ export interface ProductInput {
   catalogueName?: string;
 }
 
-/** What the vision model read from the uploaded images. */
 export interface VisionAnalysis {
-  /** The model's own one-line description of the product. */
   description: string;
-  /** Keywords it extracted, fed into dataset matching alongside the description. */
   terms: string[];
-  /** Model identifier, shown in the UI so the source of this text is never unclear. */
   model: string;
 }
 
-/** How the matcher understood the product. Every field is derived from the
- *  dataset — nothing is invented. */
+/** How the search terms were resolved to HS4 categories in the dataset. */
 export interface ProductUnderstanding {
-  /** Dataset category the description matched most strongly. */
-  category: string | null;
-  /** Closest catalogue product names, best first. */
-  closestProducts: string[];
-  /** Description tokens that actually matched dataset keywords. */
+  /** HS4 categories the description matched, best first. */
+  matchedProducts: { hs4Id: string; hs4: string }[];
+  /** Description tokens that actually hit an HS4 description. */
   matchedKeywords: string[];
-  /** True when the description matched nothing — the UI must say so plainly. */
+  /** True when nothing matched — the UI must say so rather than guess. */
   isUnmatched: boolean;
 }
 
-/** A recommended market, assembled from the dataset rows that matched. */
+/**
+ * One recommended import market for a matched HS4 product.
+ * Every numeric field is computed from the CSV.
+ */
 export interface MarketRecommendation {
   country: string;
   countryIso: string;
-  /** Lowercase ISO alpha-2, for the heat map. */
   countryIso2: string;
-  lat: number;
-  lng: number;
   region: string;
+
+  hs4Id: string;
+  hs4: string;
+
+  /** USD import value of this HS4 into this country in 2024. */
+  tradeValue: number;
+  /** Rank of this HS4 among all HS4 categories this country imports (1 = largest). */
+  rank: number;
+  /** tradeValue / totalImports * 100. */
+  sharePct: number;
+  /** This country's total 2024 imports across all HS4 categories. */
+  totalImports: number;
+  /** How many distinct HS4 categories this country imports. */
+  productCount: number;
+
   demand: DemandLevel;
-  marketType: MarketType;
-  /** Dataset rows this recommendation was built from — the audit trail. */
-  matchedProducts: string[];
-  notes: string[];
-  /** Relative match strength, used only for ordering. Never shown as a score. */
-  relevance: number;
 }
 
 export interface AnalysisSummary {
@@ -115,13 +133,10 @@ export interface AnalysisResult {
   understanding: ProductUnderstanding;
   recommendations: MarketRecommendation[];
   summary: AnalysisSummary;
-  /** Present when images were uploaded and the vision model succeeded. */
   vision?: VisionAnalysis | null;
-  /** Set when images were uploaded but vision failed — the UI says so rather
-   *  than silently pretending the images were read. */
   visionError?: string | null;
-  /** Carried through to the UI so the disclaimer is never separated from the data. */
-  disclaimer: string;
+  /** Provenance, carried with the data so it is never shown detached from it. */
+  dataNotice: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -146,7 +161,7 @@ export interface AuthResponse {
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
-  /** Dataset rows used to answer, so a reply can always be traced back. */
+  /** Countries or HS4 categories the answer was computed from. */
   sources?: string[];
 }
 

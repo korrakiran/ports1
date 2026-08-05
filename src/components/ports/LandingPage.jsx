@@ -81,15 +81,15 @@ const PRINCIPLES = [
 const FAQS = [
   {
     q: 'How does PortsAI find export markets for my product?',
-    a: 'You upload a photo and a short description. A vision model reads the image to identify the product and its material, and that is combined with your description and matched against our trade dataset. You get a shortlist where every market shows what it matched on.'
+    a: 'You upload a photo and a short description. A vision model reads the image to identify the product and its material, and that is combined with your description to match an HS4 trade category. We then rank every country that imported that category in 2024 by value, and show you the largest markets with their rank, import share and demand level.'
   },
   {
     q: 'Is PortsAI fully built yet?',
-    a: 'No. We are in early access. Product analysis, market matching and export guidance work today. The trade data behind recommendations is currently a prototype dataset built for demonstration — it is clearly labelled as such everywhere it appears, and is being replaced with production trade data.'
+    a: 'We are in early access, but the trade data is real. Recommendations are based on 2024 international trade data from the Observatory of Economic Complexity (OEC), powered by the CEPII BACI trade database derived from official UN Comtrade customs data — 226 countries and territories and more than 232,000 HS4-level import records. Product analysis, market matching and export guidance all work today.'
   },
   {
-    q: 'Do you show demand figures or tariff rates?',
-    a: 'No, and deliberately. We do not have verified figures, so we do not print any. Demand and market type are expressed as qualitative labels — Very High, Growing, Premium Market — rather than percentages or values we cannot stand behind.'
+    q: 'Where do the demand figures come from?',
+    a: 'Every figure is computed from the 2024 OEC / CEPII BACI dataset, derived from official UN Comtrade customs records. For each market we show the actual import value for your product category, its rank among everything that country imports, and its share of total imports. The demand level is derived from that rank and share — it is calculated, not assigned. We do not hold tariff or certification data, so we do not quote any.'
   },
   {
     q: 'What do you need from me?',
@@ -156,16 +156,16 @@ function Reveal({ children, style }) {
 const DEMAND = {
   'Very High': 'var(--ld-map-4)',
   High: 'var(--ld-map-3)',
-  Medium: 'var(--ld-map-2)',
-  Growing: 'var(--ld-map-1)'
+  Moderate: 'var(--ld-map-2)',
+  Low: 'var(--ld-map-1)'
 };
 
 const EXAMPLE_MARKETS = [
   { country: 'Germany', demand: 'Very High', type: 'Premium Market' },
   { country: 'United States', demand: 'High', type: 'Premium Market' },
   { country: 'United Arab Emirates', demand: 'High', type: 'Re-export Hub' },
-  { country: 'Japan', demand: 'Medium', type: 'Premium Market' },
-  { country: 'Australia', demand: 'Growing', type: 'Volume Market' }
+  { country: 'Japan', demand: 'Moderate', type: 'Premium Market' },
+  { country: 'Australia', demand: 'Low', type: 'Volume Market' }
 ];
 
 function StageUpload() {
@@ -785,9 +785,9 @@ export default function LandingPage({ onSignUp, onLogin }) {
                 Ports<span style={{ color: 'var(--ld-navy)' }}>AI</span>
               </span>
               <p className="ld-small">
-                Export market intelligence for Indian MSMEs. In early access — trade
-                recommendations currently run on a prototype dataset, labelled as such wherever
-                it appears.
+                Export market intelligence for Indian MSMEs. Recommendations are built on
+                2024 OEC / CEPII BACI trade data, derived from official UN Comtrade customs
+                records.
               </p>
             </div>
 

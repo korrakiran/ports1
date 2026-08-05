@@ -83,7 +83,9 @@ router.get(
         id: String(a._id),
         description: a.description,
         createdAt: a.createdAt.toISOString(),
-        category: a.result?.understanding?.category ?? null,
+        category: a.result?.understanding?.matchedProducts?.[0]?.hs4 ?? null,
+        // Saved before the OEC dataset was integrated — no trade figures behind it.
+        legacy: !Array.isArray(a.result?.understanding?.matchedProducts),
         marketCount: a.result?.recommendations?.length ?? 0
       }))
     );
@@ -120,7 +122,23 @@ router.post(
 
 /* GET /api/analysis/meta/dataset — provenance, surfaced in the UI */
 router.get('/meta/dataset', (_req, res) => {
-  res.json({ disclaimer: getTradeRepository().disclaimer() });
+  res.json({ notice: getTradeRepository().dataNotice() });
 });
+
+/* GET /api/analysis/meta/country/:iso3 — a country's largest 2024 imports,
+   ranked by trade value with demand computed per product. */
+router.get(
+  '/meta/country/:iso3',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const repo = getTradeRepository();
+    const iso3 = String(req.params.iso3);
+    const country = await repo.country(iso3);
+    if (!country) throw new HttpError(404, 'Country not found in the trade dataset.');
+
+    const limit = Math.min(Number(req.query.limit) || 25, 100);
+    res.json({ country, imports: await repo.topImportsForCountry(iso3, limit) });
+  })
+);
 
 export default router;
