@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ApiError, useAuth } from '@/lib/auth-context';
 import { Alert, Button, Field } from '@/components/ui/primitives';
+import { GoogleLogin } from '@react-oauth/google';
 
 /**
  * One form for both login and signup — the two screens differ only by the name
@@ -13,7 +14,7 @@ import { Alert, Button, Field } from '@/components/ui/primitives';
  */
 export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   const isSignup = mode === 'signup';
-  const { login, signup } = useAuth();
+  const { login, signup, googleLogin } = useAuth();
   const router = useRouter();
 
   const [name, setName] = useState('');
@@ -39,6 +40,27 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
         setFieldErrors(err.details ?? {});
       } else {
         setError('Something went wrong. Please try again.');
+      }
+      setSubmitting(false);
+    }
+  }
+
+  async function handleGoogleSuccess(credentialResponse: any) {
+    setError(null);
+    setSubmitting(true);
+    try {
+      if (credentialResponse.credential) {
+        await googleLogin(credentialResponse.credential);
+        router.push('/analyze');
+      } else {
+        setError('Google authentication failed. No credential returned.');
+        setSubmitting(false);
+      }
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError('Something went wrong during Google sign-in.');
       }
       setSubmitting(false);
     }
@@ -105,6 +127,21 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
       <Button type="submit" size="lg" block loading={submitting}>
         {isSignup ? 'Create account' : 'Log in'}
       </Button>
+
+      <div style={{ display: 'flex', alignItems: 'center', margin: '16px 0' }}>
+        <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }} />
+        <span style={{ padding: '0 12px', color: '#64748b', fontSize: '14px' }}>or</span>
+        <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }} />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => {
+            setError('Google sign-in was aborted or failed.');
+          }}
+        />
+      </div>
 
       <p className="muted" style={{ textAlign: 'center' }}>
         {isSignup ? 'Already have an account? ' : "Don't have an account? "}

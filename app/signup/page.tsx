@@ -1,7 +1,10 @@
 import AuthForm from '@/components/app/AuthForm';
 import AppHeader from '@/components/app/AppHeader';
 
-export const metadata = { title: 'Sign up | PortsAI' };
+export const metadata = {
+  title: 'Sign up | PortsAI',
+  description: 'Create a PortsAI account to analyze products, compute trade margins, and access export readiness guidance.'
+};
 
 export default function SignupPage() {
   return (
