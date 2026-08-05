@@ -1,16 +1,17 @@
-import { readFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { DATA_SOURCE, type CountryTotals, type MarketRecommendation } from '@shared/types';
-import type { Hs4Match, TradeRepository } from './TradeRepository.js';
+import { readFile } from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import type { CountryTotals, MarketRecommendation } from '@shared/types';
+import { DATA_SOURCE } from '@shared/types';
 import { ISO3_TO_ISO2, REGION_BY_PREFIX } from './countryCodes.js';
 import { classifyDemand } from './demand.js';
 import { normalise } from '../analysis/tokens.js';
+import type { Hs4Match, TradeRepository } from './TradeRepository.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const CSV_PATH = resolve(__dirname, '../../../../global_imports_hs4.csv');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const CSV_PATH = path.resolve(__dirname, '../../../../global_imports_hs4.csv');
 
-/** One HS4 line item for a country, with its position already resolved. */
 interface CountryProduct {
   hs4Id: string;
   hs4: string;
@@ -19,35 +20,31 @@ interface CountryProduct {
   sharePct: number;
 }
 
-interface CountryEntry extends CountryTotals {
+interface CountryEntry {
   countryId: string;
-  /** Sorted by trade value, largest first. Index + 1 === rank. */
+  country: string;
+  iso3: string;
+  iso2: string;
+  region: string;
+  totalImports: number;
+  productCount: number;
   products: CountryProduct[];
 }
 
 interface ProductEntry {
   hs4Id: string;
   hs4: string;
-  /** Search terms derived from the description. */
   terms: Set<string>;
-  /** iso3 -> trade value, so markets can be ranked without rescanning. */
   byCountry: Map<string, number>;
 }
 
 interface Index {
-  countries: Map<string, CountryEntry>; // keyed by iso3
-  products: Map<string, ProductEntry>; // keyed by hs4Id
-  /** search term -> hs4 ids containing it. */
+  countries: Map<string, CountryEntry>;
+  products: Map<string, ProductEntry>;
   termIndex: Map<string, Set<string>>;
 }
 
-/**
- * Splits one CSV line, honouring double-quoted fields.
- *
- * 5,730 rows in this dataset contain a quoted description with embedded commas
- * (e.g. "Acyclic alcohol derivatives (halogenated, sulphonated, nitrated)"), so
- * splitting on comma alone corrupts them.
- */
+/** Robust CSV parser that handles quotes and commas inside cells. */
 function parseLine(line: string): string[] {
   const out: string[] = [];
   let field = '';
@@ -59,7 +56,7 @@ function parseLine(line: string): string[] {
     if (quoted) {
       if (ch === '"') {
         if (line[i + 1] === '"') {
-          field += '"'; // escaped quote
+          field += '"';
           i++;
         } else {
           quoted = false;
@@ -89,10 +86,6 @@ const STOP_TERMS = new Set([
 
 /**
  * Trade repository backed by global_imports_hs4.csv.
- *
- * The file is read once and indexed in memory. Rank, share and demand are
- * derived during indexing from trade values — none of them exist in the source
- * file, and none are stored anywhere else.
  */
 export class CsvTradeRepository implements TradeRepository {
   private loaded?: Promise<Index>;
@@ -104,11 +97,8 @@ export class CsvTradeRepository implements TradeRepository {
 
       const countries = new Map<string, CountryEntry>();
       const products = new Map<string, ProductEntry>();
-      // Intern descriptions: each of the ~1,228 strings recurs across up to 226
-      // countries, so sharing references keeps the index far smaller.
       const descriptions = new Map<string, string>();
 
-      // header at index 0
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i];
         if (!line) continue;
@@ -122,7 +112,7 @@ export class CsvTradeRepository implements TradeRepository {
 
         const iso3 = countryId.slice(2).toUpperCase();
         const iso2 = ISO3_TO_ISO2[iso3];
-        if (!iso2) continue; // not paintable on the map; skip rather than guess
+        if (!iso2) continue;
 
         let hs4 = descriptions.get(hs4Raw);
         if (!hs4) {
@@ -158,7 +148,6 @@ export class CsvTradeRepository implements TradeRepository {
         product.byCountry.set(iso3, (product.byCountry.get(iso3) ?? 0) + tradeValue);
       }
 
-      // Rank and share, per country, from the values just accumulated.
       for (const country of countries.values()) {
         country.products.sort((a, b) => b.tradeValue - a.tradeValue);
         country.productCount = country.products.length;
@@ -169,7 +158,6 @@ export class CsvTradeRepository implements TradeRepository {
         }
       }
 
-      // Inverted index over HS4 description words.
       const termIndex = new Map<string, Set<string>>();
       for (const product of products.values()) {
         for (const term of product.terms) {
@@ -189,7 +177,6 @@ export class CsvTradeRepository implements TradeRepository {
     return this.loaded;
   }
 
-  /** Builds a recommendation for one country/product pair from indexed data. */
   private toRecommendation(country: CountryEntry, product: CountryProduct): MarketRecommendation {
     return {
       country: country.country,
@@ -203,7 +190,7 @@ export class CsvTradeRepository implements TradeRepository {
       sharePct: product.sharePct,
       totalImports: country.totalImports,
       productCount: country.productCount,
-      demand: classifyDemand(product.rank, product.sharePct)
+      demand: classifyDemand(product.rank, product.sharePct, product.tradeValue)
     };
   }
 
@@ -229,8 +216,6 @@ export class CsvTradeRepository implements TradeRepository {
     const scored: Hs4Match[] = [];
     for (const [hs4Id, hit] of hits) {
       const product = products.get(hs4Id)!;
-      // Reward matching a large share of the description's own words, so
-      // "Coffee" beats "Coffee or Tea Extracts" for the query "coffee".
       const coverage = hit.matched.size / product.terms.size;
       scored.push({
         hs4Id,
@@ -242,8 +227,6 @@ export class CsvTradeRepository implements TradeRepository {
 
     scored.sort((a, b) => b.score - a.score || a.hs4.localeCompare(b.hs4));
 
-    // Keep only matches close to the best one — a single shared generic word
-    // should not drag in an unrelated category.
     const best = scored[0].score;
     return scored.filter((s) => s.score >= best * 0.55).slice(0, limit);
   }
@@ -255,6 +238,11 @@ export class CsvTradeRepository implements TradeRepository {
 
     const out: MarketRecommendation[] = [];
 
+    let worldProductTotal = 0;
+    for (const [, val] of product.byCountry) {
+      worldProductTotal += val;
+    }
+
     for (const [iso3] of product.byCountry) {
       const country = countries.get(iso3);
       if (!country) continue;
@@ -264,6 +252,15 @@ export class CsvTradeRepository implements TradeRepository {
     }
 
     out.sort((a, b) => b.tradeValue - a.tradeValue);
+
+    // Re-classify demand based on global product rank and global product share
+    for (let i = 0; i < out.length; i++) {
+      const rec = out[i];
+      const globalRank = i + 1;
+      const globalProductShare = worldProductTotal > 0 ? (rec.tradeValue / worldProductTotal) * 100 : 0;
+      rec.demand = classifyDemand(globalRank, globalProductShare, rec.tradeValue);
+    }
+
     return out.slice(0, limit);
   }
 

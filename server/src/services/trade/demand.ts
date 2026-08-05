@@ -1,24 +1,22 @@
 import type { DemandLevel } from '@shared/types';
 
 /**
- * Classifies demand for one HS4 product within one importing country.
+ * Classifies export demand tier for a product market based on its global position
+ * and trade volume for that product category.
  *
- * Both inputs are computed from global_imports_hs4.csv:
- *   rank     — position of this HS4 among every HS4 the country imports, by
- *              trade value, 1 = largest.
- *   sharePct — tradeValue / country's total imports * 100.
- *
- * A product qualifies for a level if it satisfies *either* the rank or the
- * share condition, so a large market's long tail is not unfairly demoted and a
- * small market's concentrated imports still register.
- *
- * Levels are never stored or hardcoded — they are derived on every read.
+ *   globalRank            — Position among all global importers for this product (1 = top importer)
+ *   globalProductSharePct — Percentage share of global world imports for this product
+ *   tradeValue            — Total USD import value for this product category
  */
-export function classifyDemand(rank: number, sharePct: number): DemandLevel {
-  if (rank <= 10 || sharePct >= 5) return 'Very High';
-  if (rank <= 30 || sharePct >= 2) return 'High';
-  if (rank <= 75 || sharePct >= 0.5) return 'Moderate';
-  if (rank <= 150 || sharePct >= 0.1) return 'Low';
+export function classifyDemand(
+  globalRank: number,
+  globalProductSharePct: number,
+  tradeValue: number
+): DemandLevel {
+  if (globalRank <= 3 || globalProductSharePct >= 10 || tradeValue >= 150_000_000) return 'Very High';
+  if (globalRank <= 8 || globalProductSharePct >= 4 || tradeValue >= 75_000_000) return 'High';
+  if (globalRank <= 15 || globalProductSharePct >= 1.5 || tradeValue >= 25_000_000) return 'Moderate';
+  if (globalRank <= 30 || globalProductSharePct >= 0.5 || tradeValue >= 5_000_000) return 'Low';
   return 'Niche';
 }
 
