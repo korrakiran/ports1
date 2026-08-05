@@ -24,16 +24,17 @@ export default function MarketHeatMap({
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const byIso2 = useMemo(
-    () => new Map(recommendations.map((r) => [r.countryIso2, r])),
+    () => new Map(recommendations.map((r) => [(r.countryIso2 || '').toLowerCase(), r])),
     [recommendations]
   );
 
   const css = useMemo(
     () =>
       recommendations
+        .filter((r) => r.countryIso2)
         .map(
           (r) =>
-            `.heatmap-svg path#${r.countryIso2} { fill: ${demandFill(r.demand)} !important; cursor: pointer; }`
+            `.heatmap-svg path#${r.countryIso2.toLowerCase()} { fill: ${demandFill(r.demand)} !important; cursor: pointer; }`
         )
         .join('\n'),
     [recommendations]
@@ -41,7 +42,7 @@ export default function MarketHeatMap({
 
   function isoFromEvent(e: React.MouseEvent): string | null {
     const target = e.target as SVGElement;
-    return target.tagName === 'path' ? target.id : null;
+    return target.tagName === 'path' && target.id ? target.id.toLowerCase() : null;
   }
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -90,6 +91,8 @@ export default function MarketHeatMap({
           filter: drop-shadow(0 10px 22px rgba(0, 102, 255, 0.45));
           transform: translateY(-4px) scale(1.025);
         }
+
+        ${css}
       `}</style>
 
       <div
