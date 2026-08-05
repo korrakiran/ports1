@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Eye, Package, Sparkles } from 'lucide-react';
+import { ArrowLeft, Eye, Package } from 'lucide-react';
 import type { AnalysisResult } from '@shared/types';
 import AppHeader from '@/components/app/AppHeader';
 import MarketCard from '@/components/results/MarketCard';
@@ -142,102 +142,26 @@ export default function ResultsPage() {
                 <span className="eyebrow">Analysis</span>
                 <h1 className="page-title">{summary.headline}</h1>
                 <p className="page-subtitle">{analysis.input.description}</p>
-
-                {analysis.vision && (
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '7px 14px',
-                      borderRadius: '20px',
-                      backgroundColor: 'rgba(0, 102, 255, 0.06)',
-                      border: '1px solid rgba(0, 102, 255, 0.18)',
-                      width: 'fit-content',
-                      marginTop: '4px'
-                    }}
-                  >
-                    <Eye size={14} color="#0066FF" />
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#090d16' }}>
-                      AI Vision Read:{' '}
-                      <strong style={{ color: '#0066FF' }}>{analysis.vision.description}</strong>
-                    </span>
-                  </div>
-                )}
-
-                <div style={{ maxWidth: '52ch', marginTop: '4px' }}>
+                <div style={{ maxWidth: '52ch' }}>
                   <DataNotice />
                 </div>
               </div>
 
-              {/* Facts rail — Prominently featuring Vision AI result FIRST */}
+              {/* Facts rail — Clean, professional editorial layout */}
               <div className="result-facts">
-                {/* 1. READ FROM IMAGES — FIRST & PROMINENT */}
+                {/* 1. READ FROM IMAGES — FIRST */}
                 {analysis.vision && (
-                  <div
-                    style={{
-                      padding: '14px 16px',
-                      borderRadius: '12px',
-                      background: 'linear-gradient(135deg, rgba(0, 102, 255, 0.06) 0%, rgba(243, 248, 255, 0.95) 100%)',
-                      border: '1px solid rgba(0, 102, 255, 0.28)',
-                      boxShadow: '0 4px 16px rgba(0, 102, 255, 0.07)',
-                      marginBottom: '14px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span
-                        style={{
-                          width: '7px',
-                          height: '7px',
-                          borderRadius: '50%',
-                          backgroundColor: '#0066FF',
-                          boxShadow: '0 0 8px rgba(0, 102, 255, 0.8)'
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          fontWeight: 800,
-                          color: '#0066FF',
-                          letterSpacing: '0.05em',
-                          textTransform: 'uppercase'
-                        }}
-                      >
-                        Read From Images
-                      </span>
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: '18px',
-                        fontWeight: 800,
-                        color: '#090d16',
-                        letterSpacing: '-0.02em',
-                        lineHeight: 1.25,
-                        marginTop: '2px'
-                      }}
-                    >
+                  <div className="result-fact">
+                    <span className="row row-sm">
+                      <Eye size={12} color="var(--text-light)" />
+                      <span className="eyebrow">Read from images</span>
+                    </span>
+                    <div className="result-fact-value" style={{ fontSize: 16, fontWeight: 700 }}>
                       {analysis.vision.description}
                     </div>
-
-                    <div className="row row-wrap" style={{ gap: 5, marginTop: '4px' }}>
-                      {analysis.vision.terms.slice(0, 8).map((t) => (
-                        <span
-                          key={t}
-                          style={{
-                            padding: '3px 10px',
-                            borderRadius: '6px',
-                            backgroundColor: '#ffffff',
-                            border: '1px solid rgba(0, 102, 255, 0.2)',
-                            fontSize: '11.5px',
-                            fontWeight: 600,
-                            color: '#0066FF',
-                            boxShadow: '0 1px 3px rgba(0, 102, 255, 0.05)'
-                          }}
-                        >
+                    <div className="row row-wrap" style={{ gap: 5, marginTop: 8 }}>
+                      {analysis.vision.terms.slice(0, 6).map((t) => (
+                        <span key={t} className="chip">
                           {t}
                         </span>
                       ))}
@@ -248,22 +172,23 @@ export default function ResultsPage() {
                 {/* 2. HS4 CATEGORY */}
                 <div className="result-fact">
                   <span className="eyebrow">HS4 category</span>
-                  <div className="result-fact-value" style={{ fontSize: '15.5px', fontWeight: 700 }}>
+                  <div className="result-fact-value">
                     {understanding.matchedProducts[0]?.hs4 ?? '—'}
                   </div>
-                  <div className="muted" style={{ marginTop: 4, fontSize: '12px' }}>
+                  <div className="muted" style={{ marginTop: 4 }}>
                     The trade category your description resolved to. Every market below is
-                    ranked by its 2024 imports of this category.
+                    ranked by its 2024 imports of this category — if it looks wrong, reword
+                    your description and run it again.
                   </div>
                 </div>
 
                 {/* 3. LARGEST MARKET */}
                 <div className="result-fact">
                   <span className="eyebrow">Largest market</span>
-                  <div className="result-fact-value" style={{ fontSize: '15px', fontWeight: 700 }}>
+                  <div className="result-fact-value">
                     {recommendations[0].country} · {formatTradeValue(recommendations[0].tradeValue)}
                   </div>
-                  <div className="muted" style={{ marginTop: 4, fontSize: '12px' }}>
+                  <div className="muted" style={{ marginTop: 4 }}>
                     #{recommendations[0].rank} of{' '}
                     {recommendations[0].productCount.toLocaleString()} categories it imports,{' '}
                     {formatShare(recommendations[0].sharePct)} of total imports.
