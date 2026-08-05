@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import GlobeTooltip from './GlobeTooltip';
-import GlobeLegend from './GlobeLegend';
 import {
   DEMAND_LEVELS,
   GEOJSON_URL,
@@ -228,9 +227,23 @@ export default function Interactive3DGlobe({ onSelectCountry }) {
     const rect = box.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    // Flip the card near the right/bottom edges so it stays inside the panel.
-    const dx = x + 270 > rect.width ? x - 250 : x + 16;
-    const dy = y + 130 > rect.height ? y - 120 : y + 16;
+
+    const tooltipWidth = node.offsetWidth || 210;
+    const tooltipHeight = node.offsetHeight || 110;
+
+    let dx = x + 14;
+    if (dx + tooltipWidth > rect.width) {
+      dx = x - tooltipWidth - 14;
+    }
+
+    let dy = y + 14;
+    if (dy + tooltipHeight > rect.height) {
+      dy = y - tooltipHeight - 14;
+    }
+
+    dx = Math.max(6, Math.min(dx, rect.width - tooltipWidth - 6));
+    dy = Math.max(6, Math.min(dy, rect.height - tooltipHeight - 6));
+
     node.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
   }, []);
 
@@ -308,7 +321,6 @@ export default function Interactive3DGlobe({ onSelectCountry }) {
       )}
 
       <GlobeTooltip ref={tooltipRef} country={hovered} />
-      <GlobeLegend />
     </div>
   );
 }

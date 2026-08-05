@@ -75,10 +75,23 @@ export default function WorldHeroMap() {
       const stage = document.getElementById('world-hero-stage');
       if (stage) {
         const rect = stage.getBoundingClientRect();
-        setTooltipPos({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        });
+        const rawX = e.clientX - rect.left;
+        const rawY = e.clientY - rect.top;
+
+        let posX = rawX + 14;
+        if (posX + 180 > rect.width) {
+          posX = rawX - 195;
+        }
+
+        let posY = rawY - 48;
+        if (posY < 6) {
+          posY = rawY + 14;
+        }
+
+        posX = Math.max(6, Math.min(posX, rect.width - 190));
+        posY = Math.max(6, Math.min(posY, rect.height - 70));
+
+        setTooltipPos({ x: posX, y: posY });
       }
     };
 

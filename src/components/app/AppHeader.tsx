@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
@@ -10,6 +11,22 @@ import { Button } from '@/components/ui/primitives';
 export default function AppHeader() {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
   return (
     <header className="app-header">
@@ -69,21 +86,25 @@ export default function AppHeader() {
         <Menu size={22} color="#090d16" />
       </button>
 
-      {/* FULL SCREEN MOBILE OVERLAY MENU (per portsai.in reference) */}
-      {mobileOpen && (
+      {/* FULL SCREEN MOBILE OVERLAY MENU (Mounted on document.body via createPortal) */}
+      {mounted && mobileOpen && createPortal(
         <div
           className="mobile-fullscreen-menu"
           style={{
             position: 'fixed',
-            inset: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             width: '100vw',
             height: '100vh',
             backgroundColor: '#ffffff',
-            zIndex: 999999,
+            zIndex: 99999999,
             display: 'flex',
             flexDirection: 'column',
             padding: '20px 24px 32px',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            overflowY: 'auto'
           }}
         >
           {/* Header with Logo and Close Box */}
@@ -115,6 +136,7 @@ export default function AppHeader() {
               className="ld-mobile-toggle-box"
               onClick={() => setMobileOpen(false)}
               aria-label="Close Menu"
+              style={{ display: 'flex' }}
             >
               <X size={22} color="#090d16" />
             </button>
@@ -198,7 +220,8 @@ export default function AppHeader() {
               </Link>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );

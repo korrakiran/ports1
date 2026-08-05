@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
@@ -439,8 +440,24 @@ export default function LandingPage({ onSignUp, onLogin }) {
   const [activeStep, setActiveStep] = useState(0);
   const [openFaq, setOpenFaq] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const panelRefs = useRef([]);
   const { user, loading, logout } = useAuth();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   // Advance the sticky rail as the right-hand panels pass through the viewport.
   useEffect(() => {
@@ -516,170 +533,195 @@ export default function LandingPage({ onSignUp, onLogin }) {
             </button>
           </div>
         </div>
+      </header>
 
-        {/* FULL SCREEN MOBILE OVERLAY MENU (per portsai.in reference) */}
-        {mobileMenuOpen && (
+      {/* FULL SCREEN MOBILE OVERLAY MENU (Mounted on document.body via createPortal) */}
+      {mounted && mobileMenuOpen && createPortal(
+        <div
+          className="mobile-fullscreen-menu"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: '#ffffff',
+            zIndex: 99999999,
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '20px 24px 32px',
+            boxSizing: 'border-box',
+            overflowY: 'auto'
+          }}
+        >
+          {/* Header with Logo and Close Box */}
           <div
-            className="mobile-fullscreen-menu"
             style={{
-              position: 'fixed',
-              inset: 0,
-              width: '100vw',
-              height: '100vh',
-              backgroundColor: '#ffffff',
-              zIndex: 999999,
               display: 'flex',
-              flexDirection: 'column',
-              padding: '20px 24px 32px',
-              boxSizing: 'border-box'
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              paddingBottom: '16px',
+              borderBottom: '1px solid #f1f5f9'
             }}
           >
-            {/* Header with Logo and Close Box */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                width: '100%',
-                paddingBottom: '16px',
-                borderBottom: '1px solid #f1f5f9'
+            <button
+              className="ld-wordmark"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              <button
-                className="ld-wordmark"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              >
-                Ports<span>AI</span>
-              </button>
+              Ports<span>AI</span>
+            </button>
 
-              <button
-                className="ld-mobile-toggle-box"
-                onClick={() => setMobileMenuOpen(false)}
-                aria-label="Close Menu"
-              >
-                <X size={22} color="#090d16" />
-              </button>
-            </div>
-
-            {/* Centered Clean Links per portsai.in */}
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '24px',
-                padding: '32px 0'
-              }}
+            <button
+              className="ld-mobile-toggle-box"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close Menu"
+              style={{ display: 'flex' }}
             >
-              <a
-                href="#hero"
-                style={{
-                  fontSize: '22px',
-                  fontWeight: 700,
-                  color: '#090d16',
-                  textDecoration: 'none'
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              >
-                Home
-              </a>
-              <a
-                href="#how-it-works"
-                style={{
-                  fontSize: '22px',
-                  fontWeight: 700,
-                  color: '#090d16',
-                  textDecoration: 'none'
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  scrollTo('how-it-works');
-                }}
-              >
-                How it works
-              </a>
-              <a
-                href="#inside"
-                style={{
-                  fontSize: '22px',
-                  fontWeight: 700,
-                  color: '#090d16',
-                  textDecoration: 'none'
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  scrollTo('inside');
-                }}
-              >
-                What you get
-              </a>
-              <a
-                href="#principles"
-                style={{
-                  fontSize: '22px',
-                  fontWeight: 700,
-                  color: '#090d16',
-                  textDecoration: 'none'
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  scrollTo('principles');
-                }}
-              >
-                Principles
-              </a>
-              <a
-                href="#faq"
-                style={{
-                  fontSize: '22px',
-                  fontWeight: 700,
-                  color: '#090d16',
-                  textDecoration: 'none'
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  scrollTo('faq');
-                }}
-              >
-                FAQ
-              </a>
-            </div>
-
-            {/* Primary Mobile Action CTA */}
-            <div style={{ width: '100%', maxWidth: '340px', margin: '0 auto' }}>
-              <button
-                className="ld-btn ld-btn--primary"
-                style={{
-                  width: '100%',
-                  height: '48px',
-                  fontSize: '15px',
-                  borderRadius: '10px',
-                  justifyContent: 'center'
-                }}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onSignUp();
-                }}
-              >
-                Analyze My Product <ArrowRight size={16} />
-              </button>
-            </div>
+              <X size={22} color="#090d16" />
+            </button>
           </div>
-        )}
-      </header>
+
+          {/* Centered Clean Links per portsai.in */}
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '24px',
+              padding: '32px 0'
+            }}
+          >
+            <a
+              href="#hero"
+              style={{
+                fontSize: '22px',
+                fontWeight: 700,
+                color: '#090d16',
+                textDecoration: 'none'
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              Home
+            </a>
+            <a
+              href="#how-it-works"
+              style={{
+                fontSize: '22px',
+                fontWeight: 700,
+                color: '#090d16',
+                textDecoration: 'none'
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                scrollTo('how-it-works');
+              }}
+            >
+              How it works
+            </a>
+            <a
+              href="#inside"
+              style={{
+                fontSize: '22px',
+                fontWeight: 700,
+                color: '#090d16',
+                textDecoration: 'none'
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                scrollTo('inside');
+              }}
+            >
+              What you get
+            </a>
+            <a
+              href="#principles"
+              style={{
+                fontSize: '22px',
+                fontWeight: 700,
+                color: '#090d16',
+                textDecoration: 'none'
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                scrollTo('principles');
+              }}
+            >
+              Principles
+            </a>
+            <a
+              href="#faq"
+              style={{
+                fontSize: '22px',
+                fontWeight: 700,
+                color: '#090d16',
+                textDecoration: 'none'
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                scrollTo('faq');
+              }}
+            >
+              FAQ
+            </a>
+            {!user && (
+              <button
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  color: '#475569',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onLogin();
+                }}
+              >
+                Log in
+              </button>
+            )}
+          </div>
+
+          {/* Primary Mobile Action CTA */}
+          <div style={{ width: '100%', maxWidth: '340px', margin: '0 auto' }}>
+            <button
+              className="ld-btn ld-btn--primary"
+              style={{
+                width: '100%',
+                height: '48px',
+                fontSize: '15px',
+                borderRadius: '10px',
+                justifyContent: 'center'
+              }}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onSignUp();
+              }}
+            >
+              Analyze My Product <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* ================= HERO — 7/5, globe bleeds ================= */}
       <section id="hero" className="ld-hero">
