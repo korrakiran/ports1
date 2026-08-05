@@ -1676,6 +1676,34 @@ h1, h2, h3, h4, h5, h6 {
   transform: scale(1.05);
 }
 
+/* ==========================================================================
+   COMPACT MOBILE GLOBE & MAP TOOLTIP CARD
+   ========================================================================== */
+@media (max-width: 640px) {
+  .globe-tooltip-card {
+    padding: 6px 10px !important;
+    border-radius: 8px !important;
+    min-width: 110px !important;
+    max-width: 165px !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14) !important;
+  }
+
+  .globe-tooltip-title {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+  }
+
+  .globe-tooltip-text {
+    font-size: 9.5px !important;
+    margin-top: 2px !important;
+  }
+
+  .globe-tooltip-action {
+    display: none !important;
+  }
+}
+
+
 
 
 

@@ -18,6 +18,7 @@ const GlobeTooltip = forwardRef(function GlobeTooltip({ country }, ref) {
   return (
     <div
       ref={ref}
+      className="globe-tooltip-card"
       aria-hidden={!visible}
       style={{
         position: 'absolute',
@@ -37,7 +38,7 @@ const GlobeTooltip = forwardRef(function GlobeTooltip({ country }, ref) {
         maxWidth: '250px'
       }}
     >
-      <div style={{ fontSize: '14px', fontWeight: 800, color: '#090d16', letterSpacing: '-0.02em' }}>
+      <div className="globe-tooltip-title" style={{ fontSize: '14px', fontWeight: 800, color: '#090d16', letterSpacing: '-0.02em' }}>
         {country?.name ?? ''}
       </div>
 
@@ -50,18 +51,18 @@ const GlobeTooltip = forwardRef(function GlobeTooltip({ country }, ref) {
             backgroundColor: country.color,
             flexShrink: 0
           }} />
-          <span style={{ fontSize: '12.5px', fontWeight: 600, color: country.color }}>
+          <span className="globe-tooltip-text" style={{ fontSize: '12.5px', fontWeight: 600, color: country.color }}>
             {country.level}
           </span>
         </div>
       ) : (
-        <div style={{ fontSize: '12.5px', color: '#94a3b8', marginTop: '5px' }}>
+        <div className="globe-tooltip-text" style={{ fontSize: '12.5px', color: '#94a3b8', marginTop: '5px' }}>
           {country?.emptyLabel}
         </div>
       )}
 
       {country?.level && !country.isOrigin && (
-        <div style={{
+        <div className="globe-tooltip-action" style={{
           display: 'flex',
           alignItems: 'center',
           gap: '4px',
