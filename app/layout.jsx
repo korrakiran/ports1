@@ -3,6 +3,7 @@ import { AuthProvider } from '@/lib/auth-context';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
 export const metadata = {
+  metadataBase: new URL('https://cargo.portsai.in'),
   title: 'PortsAI | Find the export markets ready for your product',
   description: 'PortsAI analyzes your product and helps Indian MSMEs find the export markets worth pursuing, with certification and export readiness guidance.'
 };
