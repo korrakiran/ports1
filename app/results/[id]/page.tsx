@@ -189,9 +189,7 @@ export default function ResultsPage() {
                     {recommendations[0].country} · {formatTradeValue(recommendations[0].tradeValue)}
                   </div>
                   <div className="muted" style={{ marginTop: 4 }}>
-                    #{recommendations[0].rank} of{' '}
-                    {recommendations[0].productCount.toLocaleString()} categories it imports,{' '}
-                    {formatShare(recommendations[0].sharePct)} of total imports.
+                    #1 Global Market Importer · {formatShare(recommendations[0].sharePct)} of country imports.
                   </div>
                 </div>
 

@@ -7,13 +7,7 @@ import { formatShare, formatTradeValue } from '@/lib/format';
 
 /**
  * One recommended import market.
- *
- * Trade value, rank and share are computed from global_imports_hs4.csv and
- * shown together, because the demand level means nothing without them — it is
- * derived from exactly these two figures.
- *
- * `variant` is purely presentational: the strongest markets carry more weight
- * than the tail, so the grid has rhythm rather than identical boxes.
+ * Displays global market rank (#1, #2, etc.), trade value, demand level, and import share.
  */
 export default function MarketCard({
   market,
@@ -57,7 +51,7 @@ export default function MarketCard({
         <DemandBadge level={market.demand} />
       </div>
 
-      {/* The figures the demand level was derived from. */}
+      {/* Clear figures row showing Global Importer Position & Trade Volume */}
       <dl className="market-figures">
         <div className="market-figure">
           <dt className="eyebrow">Trade value</dt>
@@ -66,10 +60,9 @@ export default function MarketCard({
           </dd>
         </div>
         <div className="market-figure">
-          <dt className="eyebrow">Rank</dt>
+          <dt className="eyebrow">Global Position</dt>
           <dd className="market-figure-value">
-            #{market.rank}
-            <span className="market-figure-note"> of {market.productCount.toLocaleString()}</span>
+            #{rank} <span className="market-figure-note">Importer</span>
           </dd>
         </div>
         <div className="market-figure">
@@ -80,9 +73,8 @@ export default function MarketCard({
 
       {featured && (
         <p className="market-note">
-          {market.country} imported {formatTradeValue(market.tradeValue)} of {market.hs4} in 2024 —
-          #{market.rank} of the {market.productCount.toLocaleString()} HS4 categories it imports, and{' '}
-          {formatShare(market.sharePct)} of its total imports.
+          {market.country} is the <strong>#{rank} global import market</strong> for {market.hs4} in 2024, absorbing{' '}
+          {formatTradeValue(market.tradeValue)} in annual imports.
         </p>
       )}
     </article>
