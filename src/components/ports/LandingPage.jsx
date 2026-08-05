@@ -508,69 +508,146 @@ export default function LandingPage({ onSignUp, onLogin }) {
 
             {/* 3-LINE HAMBURGER MENU BUTTON (MOBILE ONLY) */}
             <button
-              className="ld-mobile-toggle"
-              onClick={() => setMobileMenuOpen((v) => !v)}
-              aria-label="Toggle Navigation Menu"
+              className="ld-mobile-toggle-box"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open Navigation Menu"
             >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              <Menu size={22} color="#090d16" />
             </button>
           </div>
         </div>
 
-        {/* MOBILE MENU DROPDOWN DRAWER */}
+        {/* FULL SCREEN MOBILE OVERLAY MENU (per reference screenshots) */}
         {mobileMenuOpen && (
-          <div className="ld-mobile-menu">
-            <a
-              href="#how-it-works"
-              onClick={(e) => {
-                e.preventDefault();
-                setMobileMenuOpen(false);
-                scrollTo('how-it-works');
+          <div
+            className="mobile-fullscreen-menu"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: '#fbfaf8',
+              zIndex: 99999,
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '20px 24px 40px',
+              animation: 'fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both'
+            }}
+          >
+            {/* Header with Logo and Close Box */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%'
               }}
             >
-              How it works
-            </a>
-            <a
-              href="#inside"
-              onClick={(e) => {
-                e.preventDefault();
-                setMobileMenuOpen(false);
-                scrollTo('inside');
+              <button
+                className="ld-wordmark"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
+                Ports<span>AI</span>
+              </button>
+
+              <button
+                className="ld-mobile-toggle-box"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close Menu"
+              >
+                <X size={22} color="#090d16" />
+              </button>
+            </div>
+
+            {/* Centered Large Bold Links per Screenshot 2 */}
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '30px',
+                padding: '20px 0'
               }}
             >
-              What you get
-            </a>
-            <a
-              href="#principles"
-              onClick={(e) => {
-                e.preventDefault();
-                setMobileMenuOpen(false);
-                scrollTo('principles');
-              }}
-            >
-              Principles
-            </a>
-            <a
-              href="#faq"
-              onClick={(e) => {
-                e.preventDefault();
-                setMobileMenuOpen(false);
-                scrollTo('faq');
-              }}
-            >
-              FAQ
-            </a>
-            <div className="ld-mobile-menu-divider" />
-            <button
-              className="ld-btn ld-btn--primary"
-              style={{ width: '100%', justifyContent: 'center' }}
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onSignUp();
-              }}
-            >
-              Analyze My Product <ArrowRight size={16} />
-            </button>
+              <a
+                href="#hero"
+                className="mobile-full-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
+                Home
+              </a>
+              <a
+                href="#how-it-works"
+                className="mobile-full-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  scrollTo('how-it-works');
+                }}
+              >
+                How it works
+              </a>
+              <a
+                href="#inside"
+                className="mobile-full-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  scrollTo('inside');
+                }}
+              >
+                What you get
+              </a>
+              <a
+                href="#principles"
+                className="mobile-full-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  scrollTo('principles');
+                }}
+              >
+                Principles
+              </a>
+              <a
+                href="#faq"
+                className="mobile-full-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  scrollTo('faq');
+                }}
+              >
+                FAQ
+              </a>
+            </div>
+
+            {/* Primary Mobile Action CTA */}
+            <div style={{ width: '100%', maxWidth: '340px', margin: '0 auto' }}>
+              <button
+                className="ld-btn ld-btn--primary"
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  fontSize: '15px',
+                  borderRadius: '10px',
+                  justifyContent: 'center'
+                }}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onSignUp();
+                }}
+              >
+                Analyze My Product <ArrowRight size={16} />
+              </button>
+            </div>
           </div>
         )}
       </header>
