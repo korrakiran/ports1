@@ -517,19 +517,21 @@ export default function LandingPage({ onSignUp, onLogin }) {
           </div>
         </div>
 
-        {/* FULL SCREEN MOBILE OVERLAY MENU (per reference screenshots) */}
+        {/* FULL SCREEN MOBILE OVERLAY MENU (per portsai.in reference) */}
         {mobileMenuOpen && (
           <div
             className="mobile-fullscreen-menu"
             style={{
               position: 'fixed',
               inset: 0,
-              backgroundColor: '#fbfaf8',
-              zIndex: 99999,
+              width: '100vw',
+              height: '100vh',
+              backgroundColor: '#ffffff',
+              zIndex: 999999,
               display: 'flex',
               flexDirection: 'column',
-              padding: '20px 24px 40px',
-              animation: 'fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both'
+              padding: '20px 24px 32px',
+              boxSizing: 'border-box'
             }}
           >
             {/* Header with Logo and Close Box */}
@@ -538,7 +540,9 @@ export default function LandingPage({ onSignUp, onLogin }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                width: '100%'
+                width: '100%',
+                paddingBottom: '16px',
+                borderBottom: '1px solid #f1f5f9'
               }}
             >
               <button
@@ -560,7 +564,7 @@ export default function LandingPage({ onSignUp, onLogin }) {
               </button>
             </div>
 
-            {/* Centered Large Bold Links per Screenshot 2 */}
+            {/* Centered Clean Links per portsai.in */}
             <div
               style={{
                 flex: 1,
@@ -568,13 +572,18 @@ export default function LandingPage({ onSignUp, onLogin }) {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '30px',
-                padding: '20px 0'
+                gap: '24px',
+                padding: '32px 0'
               }}
             >
               <a
                 href="#hero"
-                className="mobile-full-link"
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  color: '#090d16',
+                  textDecoration: 'none'
+                }}
                 onClick={(e) => {
                   e.preventDefault();
                   setMobileMenuOpen(false);
@@ -585,7 +594,12 @@ export default function LandingPage({ onSignUp, onLogin }) {
               </a>
               <a
                 href="#how-it-works"
-                className="mobile-full-link"
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  color: '#090d16',
+                  textDecoration: 'none'
+                }}
                 onClick={(e) => {
                   e.preventDefault();
                   setMobileMenuOpen(false);
@@ -596,7 +610,12 @@ export default function LandingPage({ onSignUp, onLogin }) {
               </a>
               <a
                 href="#inside"
-                className="mobile-full-link"
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  color: '#090d16',
+                  textDecoration: 'none'
+                }}
                 onClick={(e) => {
                   e.preventDefault();
                   setMobileMenuOpen(false);
@@ -607,7 +626,12 @@ export default function LandingPage({ onSignUp, onLogin }) {
               </a>
               <a
                 href="#principles"
-                className="mobile-full-link"
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  color: '#090d16',
+                  textDecoration: 'none'
+                }}
                 onClick={(e) => {
                   e.preventDefault();
                   setMobileMenuOpen(false);
@@ -618,7 +642,12 @@ export default function LandingPage({ onSignUp, onLogin }) {
               </a>
               <a
                 href="#faq"
-                className="mobile-full-link"
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  color: '#090d16',
+                  textDecoration: 'none'
+                }}
                 onClick={(e) => {
                   e.preventDefault();
                   setMobileMenuOpen(false);

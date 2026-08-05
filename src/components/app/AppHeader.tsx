@@ -69,19 +69,21 @@ export default function AppHeader() {
         <Menu size={22} color="#090d16" />
       </button>
 
-      {/* FULL SCREEN MOBILE OVERLAY MENU (per reference screenshots) */}
+      {/* FULL SCREEN MOBILE OVERLAY MENU (per portsai.in reference) */}
       {mobileOpen && (
         <div
           className="mobile-fullscreen-menu"
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: '#fbfaf8',
-            zIndex: 99999,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: '#ffffff',
+            zIndex: 999999,
             display: 'flex',
             flexDirection: 'column',
-            padding: '20px 24px 40px',
-            animation: 'fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both'
+            padding: '20px 24px 32px',
+            boxSizing: 'border-box'
           }}
         >
           {/* Header with Logo and Close Box */}
@@ -90,7 +92,9 @@ export default function AppHeader() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              width: '100%'
+              width: '100%',
+              paddingBottom: '16px',
+              borderBottom: '1px solid #f1f5f9'
             }}
           >
             <Link
@@ -116,7 +120,7 @@ export default function AppHeader() {
             </button>
           </div>
 
-          {/* Centered Large Bold Links per Screenshot 2 */}
+          {/* Centered Clean Links per portsai.in */}
           <div
             style={{
               flex: 1,
@@ -124,13 +128,13 @@ export default function AppHeader() {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '30px',
-              padding: '20px 0'
+              gap: '24px',
+              padding: '32px 0'
             }}
           >
             <Link
               href="/"
-              className="mobile-full-link"
+              style={{ fontSize: '22px', fontWeight: 700, color: '#090d16', textDecoration: 'none' }}
               onClick={() => setMobileOpen(false)}
             >
               Home
@@ -140,14 +144,14 @@ export default function AppHeader() {
               <>
                 <Link
                   href="/analyze"
-                  className="mobile-full-link"
+                  style={{ fontSize: '22px', fontWeight: 700, color: '#090d16', textDecoration: 'none' }}
                   onClick={() => setMobileOpen(false)}
                 >
                   Analyze Product
                 </Link>
                 <Link
                   href="/account"
-                  className="mobile-full-link"
+                  style={{ fontSize: '22px', fontWeight: 700, color: '#090d16', textDecoration: 'none' }}
                   onClick={() => setMobileOpen(false)}
                 >
                   My Account
@@ -157,14 +161,14 @@ export default function AppHeader() {
               <>
                 <Link
                   href="/login"
-                  className="mobile-full-link"
+                  style={{ fontSize: '22px', fontWeight: 700, color: '#090d16', textDecoration: 'none' }}
                   onClick={() => setMobileOpen(false)}
                 >
                   Log in
                 </Link>
                 <Link
                   href="/signup"
-                  className="mobile-full-link"
+                  style={{ fontSize: '22px', fontWeight: 700, color: '#090d16', textDecoration: 'none' }}
                   onClick={() => setMobileOpen(false)}
                 >
                   Sign up
