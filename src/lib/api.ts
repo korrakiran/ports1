@@ -7,8 +7,7 @@ import type {
 /**
  * Single place that talks to the API.
  *
- * Every request sends credentials so the httpOnly session cookie travels with it —
- * session state is managed server-side and never exposed to client-side JavaScript.
+ * Every request sends credentials so the httpOnly session cookie travels with it.
  */
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ??
@@ -33,22 +32,26 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       ...init,
       credentials: 'include',
       headers: {
-        // FormData sets its own multipart boundary; setting it manually breaks it.
         ...(init.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
         ...init.headers
       }
     });
   } catch {
-    throw new ApiError(0, 'Could not reach the server. Is the API running on port 4000?');
+    throw new ApiError(0, 'Could not reach the server. Please check your network connection.');
   }
 
   const isJson = res.headers.get('content-type')?.includes('application/json');
   const payload = isJson ? await res.json() : null;
 
   if (!res.ok) {
+    const defaultErrorMsg =
+      res.status === 500
+        ? 'Server or Database connection failed. Please ensure MongoDB Atlas Network Access allows 0.0.0.0/0.'
+        : `Request failed (${res.status}).`;
+
     throw new ApiError(
       res.status,
-      payload?.error ?? `Request failed (${res.status}).`,
+      payload?.error ?? defaultErrorMsg,
       payload?.details
     );
   }
@@ -91,7 +94,6 @@ export interface AnalysisListItem {
   createdAt: string;
   category: string | null;
   marketCount: number;
-  /** Saved before the OEC trade dataset — needs re-running to show figures. */
   legacy?: boolean;
 }
 
