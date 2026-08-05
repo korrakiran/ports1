@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Eye, Package } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Eye, Package } from 'lucide-react';
 import type { AnalysisResult } from '@shared/types';
 import AppHeader from '@/components/app/AppHeader';
 import MarketCard from '@/components/results/MarketCard';
@@ -21,6 +21,7 @@ export default function ResultsPage() {
 
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showRemaining, setShowRemaining] = useState(false);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -278,24 +279,61 @@ export default function ResultsPage() {
           </div>
         </section>
 
-        {/* ================= 4. REMAINING MARKETS ================= */}
+        {/* ================= 4. REMAINING MARKETS — EXPANDABLE ================= */}
         {remaining.length > 0 && (
           <section className="band band--tint">
             <div className="band-inner">
-              <div className="section-head">
+              <div
+                className="section-head"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  borderBottom: showRemaining ? '1px solid var(--border-soft)' : 'none',
+                  paddingBottom: showRemaining ? '16px' : '0',
+                  marginBottom: showRemaining ? '20px' : '0'
+                }}
+                onClick={() => setShowRemaining((prev) => !prev)}
+              >
                 <div className="section-head-titles">
                   <span className="eyebrow">Also matched</span>
                   <h2 className="section-title">
                     {remaining.length} further {remaining.length === 1 ? 'market' : 'markets'}
                   </h2>
                 </div>
+
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowRemaining((prev) => !prev);
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <span>{showRemaining ? 'Collapse markets' : `Show all ${remaining.length} markets`}</span>
+                  {showRemaining ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
               </div>
 
-              <div className="market-grid">
-                {remaining.map((m, i) => (
-                  <MarketCard key={m.countryIso} market={m} rank={i + 4} variant="compact" />
-                ))}
-              </div>
+              {showRemaining && (
+                <div className="market-grid fade-up">
+                  {remaining.map((m, i) => (
+                    <MarketCard key={m.countryIso} market={m} rank={i + 4} variant="compact" />
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         )}
