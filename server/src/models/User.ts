@@ -6,7 +6,8 @@ const SALT_ROUNDS = 12;
 export interface UserDocument extends Document {
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
+  googleId?: string;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidate: string): Promise<boolean>;
@@ -35,8 +36,13 @@ const userSchema = new Schema<UserDocument>(
      */
     passwordHash: {
       type: String,
-      required: true,
+      required: false,
       select: false
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true
     }
   },
   { timestamps: true }
@@ -46,6 +52,7 @@ userSchema.methods.comparePassword = function comparePassword(
   this: UserDocument,
   candidate: string
 ): Promise<boolean> {
+  if (!this.passwordHash) return Promise.resolve(false);
   return bcrypt.compare(candidate, this.passwordHash);
 };
 

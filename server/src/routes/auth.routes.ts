@@ -92,6 +92,69 @@ router.post(
   })
 );
 
+import { OAuth2Client } from 'google-auth-library';
+let googleClient: OAuth2Client | null = null;
+
+/* POST /api/auth/google-login */
+router.post(
+  '/google-login',
+  asyncHandler(async (req, res) => {
+    const { idToken } = z
+      .object({ idToken: z.string().min(1) })
+      .parse(req.body);
+
+    if (!env.GOOGLE_CLIENT_ID) {
+      throw new HttpError(500, 'Google Client ID is not configured on the server.');
+    }
+
+    if (!googleClient) {
+      googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+    }
+
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: env.GOOGLE_CLIENT_ID
+      });
+    } catch (err: any) {
+      throw new HttpError(400, `Google login failed: ${err.message}`);
+    }
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      throw new HttpError(400, 'Invalid Google ID token payload.');
+    }
+
+    const { email, sub: googleId, name } = payload;
+
+    // Find user by Google ID or by email
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+
+    if (!user) {
+      // Create new user (passwordHash is not set since they used OAuth)
+      user = await User.create({
+        name: name || email.split('@')[0],
+        email,
+        googleId
+      });
+    } else {
+      // If user exists but googleId is not linked, link it now
+      if (!user.googleId) {
+        user.googleId = googleId;
+        await user.save();
+      }
+    }
+
+    if (req.session) {
+      req.session.userId = String(user._id);
+      await saveSession(req);
+    }
+
+    res.json({ user: toPublicUser(user) });
+  })
+);
+
 /* POST /api/auth/logout */
 router.post('/logout', (req, res) => {
   if (req.session) {

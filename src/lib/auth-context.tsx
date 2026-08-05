@@ -11,6 +11,7 @@ import React, {
 import { useRouter } from 'next/navigation';
 import type { PublicUser } from '@shared/types';
 import { ApiError, authApi } from './api';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 interface AuthState {
   user: PublicUser | null;
@@ -19,6 +20,7 @@ interface AuthState {
   loading: boolean;
   signup: (name: string, email: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
+  googleLogin: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -61,6 +63,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(loggedIn);
   }, []);
 
+  const googleLogin = useCallback(async (idToken: string) => {
+    const { user: loggedIn } = await authApi.googleLogin(idToken);
+    setUser(loggedIn);
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
@@ -72,11 +79,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   const value = useMemo(
-    () => ({ user, loading, signup, login, logout }),
-    [user, loading, signup, login, logout]
+    () => ({ user, loading, signup, login, googleLogin, logout }),
+    [user, loading, signup, login, googleLogin, logout]
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '154628435729-pbamo5ktlta3rnk5ru4nhejijm9kv26q.apps.googleusercontent.com';
+
+  return (
+    <GoogleOAuthProvider clientId={clientId}>
+      <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    </GoogleOAuthProvider>
+  );
 }
 
 export function useAuth(): AuthState {
