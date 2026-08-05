@@ -11,7 +11,9 @@ import {
   Package,
   Globe2,
   FileCheck,
-  ChevronDown
+  ChevronDown,
+  Menu,
+  X
 } from 'lucide-react';
 import WorldHeroMap from '../WorldHeroMap';
 import WorldSVGMap from '../WorldSVGMap';
@@ -436,6 +438,7 @@ function FaqItem({ item, isOpen, onToggle }) {
 export default function LandingPage({ onSignUp, onLogin }) {
   const [activeStep, setActiveStep] = useState(0);
   const [openFaq, setOpenFaq] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const panelRefs = useRef([]);
   const { user, loading, logout } = useAuth();
 
@@ -486,10 +489,10 @@ export default function LandingPage({ onSignUp, onLogin }) {
             {/* While the session check is in flight, render neither state — a
                 "Log in" button that flips to a profile chip reads as a glitch. */}
             {loading ? (
-              <div className="ld-nav-placeholder" style={{ width: 232, height: 38 }} aria-hidden="true" />
+              <div className="ld-nav-placeholder" style={{ width: 140, height: 38 }} aria-hidden="true" />
             ) : user ? (
               <>
-                <button className="ld-btn ld-btn--primary ld-btn--sm" onClick={onSignUp}>
+                <button className="ld-btn ld-btn--primary ld-btn--sm ld-desktop-only" onClick={onSignUp}>
                   Analyze My Product
                 </button>
                 <ProfileMenu user={user} onLogout={logout} />
@@ -497,13 +500,79 @@ export default function LandingPage({ onSignUp, onLogin }) {
             ) : (
               <>
                 <button className="ld-btn ld-btn--ghost ld-btn--sm" onClick={onLogin}>Log in</button>
-                <button className="ld-btn ld-btn--primary ld-btn--sm" onClick={onSignUp}>
+                <button className="ld-btn ld-btn--primary ld-btn--sm ld-desktop-only" onClick={onSignUp}>
                   Analyze My Product
                 </button>
               </>
             )}
+
+            {/* 3-LINE HAMBURGER MENU BUTTON (MOBILE ONLY) */}
+            <button
+              className="ld-mobile-toggle"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
         </div>
+
+        {/* MOBILE MENU DROPDOWN DRAWER */}
+        {mobileMenuOpen && (
+          <div className="ld-mobile-menu">
+            <a
+              href="#how-it-works"
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                scrollTo('how-it-works');
+              }}
+            >
+              How it works
+            </a>
+            <a
+              href="#inside"
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                scrollTo('inside');
+              }}
+            >
+              What you get
+            </a>
+            <a
+              href="#principles"
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                scrollTo('principles');
+              }}
+            >
+              Principles
+            </a>
+            <a
+              href="#faq"
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                scrollTo('faq');
+              }}
+            >
+              FAQ
+            </a>
+            <div className="ld-mobile-menu-divider" />
+            <button
+              className="ld-btn ld-btn--primary"
+              style={{ width: '100%', justifyContent: 'center' }}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onSignUp();
+              }}
+            >
+              Analyze My Product <ArrowRight size={16} />
+            </button>
+          </div>
+        )}
       </header>
 
       {/* ================= HERO — 7/5, globe bleeds ================= */}
