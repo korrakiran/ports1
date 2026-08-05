@@ -1470,3 +1470,87 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 520px) {
   .market-figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ==========================================================================
+   MOBILE & TOUCH DEVICE OPTIMIZATIONS (< 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Prevent iOS Safari auto-zoom on input focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Full width mobile CTAs */
+  .btn-mobile-full {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Mobile container padding */
+  .band-inner {
+    padding: 24px 14px !important;
+  }
+
+  /* Mobile map hero canvas */
+  .map-hero-canvas {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+
+  /* Facts rail on mobile */
+  .result-facts {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  /* Mobile expandable section header */
+  .section-head-expandable {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .section-head-expandable button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Responsive Modal for Mobile */
+  .country-modal-container {
+    padding: 12px !important;
+  }
+
+  .country-modal-card {
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    width: 100% !important;
+  }
+
+  .country-modal-metrics {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 22px !important;
+  }
+
+  .page-subtitle {
+    font-size: 14px !important;
+  }
+
+  .market-figure-value--lead {
+    font-size: 15px !important;
+  }
+
+  .market-card--compact {
+    height: auto !important;
+    padding: 12px !important;
+  }
+}
+

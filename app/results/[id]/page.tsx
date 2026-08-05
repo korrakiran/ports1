@@ -292,7 +292,7 @@ export default function ResultsPage() {
           <section className="band band--tint">
             <div className="band-inner">
               <div
-                className="section-head"
+                className="section-head section-head-expandable"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -399,6 +399,7 @@ export default function ResultsPage() {
       {/* ================= COUNTRY DETAIL MODAL ================= */}
       {selectedMarket && (
         <div
+          className="country-modal-container"
           style={{
             position: 'fixed',
             inset: 0,
@@ -413,6 +414,7 @@ export default function ResultsPage() {
           onClick={() => setSelectedMarket(null)}
         >
           <div
+            className="country-modal-card"
             style={{
               backgroundColor: '#ffffff',
               borderRadius: '16px',
@@ -474,7 +476,7 @@ export default function ResultsPage() {
               </div>
 
               {/* Metric Cards Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="country-modal-metrics" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div style={{ padding: '14px', borderRadius: '10px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
                   <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Annual Trade Value
