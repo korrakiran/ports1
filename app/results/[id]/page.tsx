@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Eye, Package } from 'lucide-react';
+import { ArrowLeft, Eye, Package, Sparkles } from 'lucide-react';
 import type { AnalysisResult } from '@shared/types';
 import AppHeader from '@/components/app/AppHeader';
 import MarketCard from '@/components/results/MarketCard';
@@ -63,13 +63,6 @@ export default function ResultsPage() {
 
   const { understanding, recommendations, summary } = analysis;
 
-  /**
-   * Analyses are stored as denormalised snapshots, so records saved before the
-   * OEC trade dataset was integrated still carry the old shape — no HS4
-   * category and no trade figures. Those results were derived from a dataset
-   * that no longer exists, so they are offered for re-run rather than rendered
-   * as though they were trade data.
-   */
   const isLegacy =
     !Array.isArray(understanding?.matchedProducts) ||
     recommendations.some((r) => typeof r?.tradeValue !== 'number');
@@ -104,7 +97,7 @@ export default function ResultsPage() {
   const featured = recommendations.slice(0, 3);
   const remaining = recommendations.slice(3);
 
-  /* ---- Unmatched: one quiet column, nothing to compose around ---- */
+  /* ---- Unmatched ---- */
   if (understanding.isUnmatched || recommendations.length === 0) {
     return (
       <div className="page-shell">
@@ -133,7 +126,7 @@ export default function ResultsPage() {
       <AppHeader />
 
       <div className="page-flow">
-        {/* ================= 1. HERO SUMMARY — asymmetric ================= */}
+        {/* ================= 1. HERO SUMMARY ================= */}
         <section className="band band--plain">
           <div className="band-inner">
             <Link
@@ -149,24 +142,135 @@ export default function ResultsPage() {
                 <span className="eyebrow">Analysis</span>
                 <h1 className="page-title">{summary.headline}</h1>
                 <p className="page-subtitle">{analysis.input.description}</p>
-                <div style={{ maxWidth: '52ch' }}>
+
+                {analysis.vision && (
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '7px 14px',
+                      borderRadius: '20px',
+                      backgroundColor: 'rgba(0, 102, 255, 0.06)',
+                      border: '1px solid rgba(0, 102, 255, 0.18)',
+                      width: 'fit-content',
+                      marginTop: '4px'
+                    }}
+                  >
+                    <Eye size={14} color="#0066FF" />
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#090d16' }}>
+                      AI Vision Read:{' '}
+                      <strong style={{ color: '#0066FF' }}>{analysis.vision.description}</strong>
+                    </span>
+                  </div>
+                )}
+
+                <div style={{ maxWidth: '52ch', marginTop: '4px' }}>
                   <DataNotice />
                 </div>
               </div>
 
-              {/* Facts rail — what was understood, as discrete rows */}
+              {/* Facts rail — Prominently featuring Vision AI result FIRST */}
               <div className="result-facts">
+                {/* 1. READ FROM IMAGES — FIRST & PROMINENT */}
+                {analysis.vision && (
+                  <div
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, rgba(0, 102, 255, 0.06) 0%, rgba(243, 248, 255, 0.95) 100%)',
+                      border: '1px solid rgba(0, 102, 255, 0.28)',
+                      boxShadow: '0 4px 16px rgba(0, 102, 255, 0.07)',
+                      marginBottom: '14px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span
+                        style={{
+                          width: '7px',
+                          height: '7px',
+                          borderRadius: '50%',
+                          backgroundColor: '#0066FF',
+                          boxShadow: '0 0 8px rgba(0, 102, 255, 0.8)'
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          color: '#0066FF',
+                          letterSpacing: '0.05em',
+                          textTransform: 'uppercase'
+                        }}
+                      >
+                        Read From Images
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        fontSize: '18px',
+                        fontWeight: 800,
+                        color: '#090d16',
+                        letterSpacing: '-0.02em',
+                        lineHeight: 1.25,
+                        marginTop: '2px'
+                      }}
+                    >
+                      {analysis.vision.description}
+                    </div>
+
+                    <div className="row row-wrap" style={{ gap: 5, marginTop: '4px' }}>
+                      {analysis.vision.terms.slice(0, 8).map((t) => (
+                        <span
+                          key={t}
+                          style={{
+                            padding: '3px 10px',
+                            borderRadius: '6px',
+                            backgroundColor: '#ffffff',
+                            border: '1px solid rgba(0, 102, 255, 0.2)',
+                            fontSize: '11.5px',
+                            fontWeight: 600,
+                            color: '#0066FF',
+                            boxShadow: '0 1px 3px rgba(0, 102, 255, 0.05)'
+                          }}
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. HS4 CATEGORY */}
                 <div className="result-fact">
                   <span className="eyebrow">HS4 category</span>
-                  <div className="result-fact-value">
+                  <div className="result-fact-value" style={{ fontSize: '15.5px', fontWeight: 700 }}>
                     {understanding.matchedProducts[0]?.hs4 ?? '—'}
                   </div>
-                  <div className="muted" style={{ marginTop: 4 }}>
+                  <div className="muted" style={{ marginTop: 4, fontSize: '12px' }}>
                     The trade category your description resolved to. Every market below is
-                    ranked by its 2024 imports of this category — if it looks wrong, reword
-                    your description and run it again.
+                    ranked by its 2024 imports of this category.
                   </div>
                 </div>
+
+                {/* 3. LARGEST MARKET */}
+                <div className="result-fact">
+                  <span className="eyebrow">Largest market</span>
+                  <div className="result-fact-value" style={{ fontSize: '15px', fontWeight: 700 }}>
+                    {recommendations[0].country} · {formatTradeValue(recommendations[0].tradeValue)}
+                  </div>
+                  <div className="muted" style={{ marginTop: 4, fontSize: '12px' }}>
+                    #{recommendations[0].rank} of{' '}
+                    {recommendations[0].productCount.toLocaleString()} categories it imports,{' '}
+                    {formatShare(recommendations[0].sharePct)} of total imports.
+                  </div>
+                </div>
+
+                {/* 4. ALSO CONSIDERED */}
                 {understanding.matchedProducts.length > 1 && (
                   <div className="result-fact">
                     <span className="eyebrow">Also considered</span>
@@ -179,33 +283,8 @@ export default function ResultsPage() {
                     </div>
                   </div>
                 )}
-                <div className="result-fact">
-                  <span className="eyebrow">Largest market</span>
-                  <div className="result-fact-value">
-                    {recommendations[0].country} · {formatTradeValue(recommendations[0].tradeValue)}
-                  </div>
-                  <div className="muted" style={{ marginTop: 4 }}>
-                    #{recommendations[0].rank} of{' '}
-                    {recommendations[0].productCount.toLocaleString()} categories it imports,{' '}
-                    {formatShare(recommendations[0].sharePct)} of total imports.
-                  </div>
-                </div>
-                {analysis.vision && (
-                  <div className="result-fact">
-                    <span className="row row-sm">
-                      <Eye size={12} color="var(--text-light)" />
-                      <span className="eyebrow">Read from images</span>
-                    </span>
-                    <div className="result-fact-value">{analysis.vision.description}</div>
-                    <div className="row row-wrap" style={{ gap: 5, marginTop: 8 }}>
-                      {analysis.vision.terms.slice(0, 5).map((t) => (
-                        <span key={t} className="chip">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+
+                {/* 5. MATCHED ON */}
                 <div className="result-fact">
                   <span className="row row-sm">
                     <Package size={12} color="var(--text-light)" />
@@ -233,7 +312,7 @@ export default function ResultsPage() {
           </div>
         </section>
 
-        {/* ================= 2. MAP — full-bleed hero ================= */}
+        {/* ================= 2. MAP ================= */}
         <section className="map-hero">
           <div className="band-inner band-inner--tight" style={{ paddingBottom: 0 }}>
             <div
@@ -276,7 +355,7 @@ export default function ResultsPage() {
           </div>
         </section>
 
-        {/* ================= 4. REMAINING MARKETS — compact ================= */}
+        {/* ================= 4. REMAINING MARKETS ================= */}
         {remaining.length > 0 && (
           <section className="band band--tint">
             <div className="band-inner">
@@ -298,7 +377,7 @@ export default function ResultsPage() {
           </section>
         )}
 
-        {/* ================= 5. EXPORT READINESS — timeline + detail ================= */}
+        {/* ================= 5. EXPORT READINESS ================= */}
         <section className="band band--plain">
           <div className="band-inner">
             <div className="result-hero">
