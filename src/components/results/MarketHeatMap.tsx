@@ -7,10 +7,11 @@ import { demandFill } from '@/components/ui/primitives';
 import { formatShare, formatTradeValue } from '@/lib/format';
 
 /**
- * Enhanced Choropleth HeatMap:
- * - Distinct multi-colored light palette per demand tier
- * - Hover 3D Pop Out elevation effect on demanding countries
- * - Full 5-tier demand legend
+ * Clean & Crisp Choropleth HeatMap:
+ * - Clear slate-gray landmass background with defined country borders
+ * - High-contrast demand colors for matched markets
+ * - Interactive 3D Pop Out elevation on hover
+ * - Floating revenue callout tooltip
  */
 export default function MarketHeatMap({
   recommendations,
@@ -34,7 +35,7 @@ export default function MarketHeatMap({
         .filter((r) => r.countryIso2)
         .map(
           (r) =>
-            `.heatmap-svg path#${r.countryIso2.toLowerCase()} { fill: ${demandFill(r.demand)} !important; cursor: pointer; }`
+            `.heatmap-svg path#${r.countryIso2.toLowerCase()} { fill: ${demandFill(r.demand)} !important; stroke: #ffffff !important; stroke-width: 0.9 !important; cursor: pointer; }`
         )
         .join('\n'),
     [recommendations]
@@ -72,25 +73,26 @@ export default function MarketHeatMap({
           width: 100%;
           height: auto;
           display: block;
-          filter: drop-shadow(0 6px 18px rgba(15, 23, 42, 0.04));
+          filter: drop-shadow(0 4px 14px rgba(15, 23, 42, 0.05));
         }
+        /* CLEAR BASE MAP GEOGRAPHY */
         .heatmap-svg path {
-          fill: #f1f5f9;
-          stroke: #ffffff;
-          stroke-width: 0.8;
-          transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                      fill 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                      filter 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                      stroke-width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+          fill: #e4e9f0;
+          stroke: #cbd5e1;
+          stroke-width: 0.6;
+          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                      fill 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                      filter 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                      stroke 0.2s cubic-bezier(0.16, 1, 0.3, 1);
           transform-origin: center center;
         }
 
         /* 3D POP OUT HOVER EFFECT FOR DEMANDING COUNTRIES */
         .heatmap-svg path:hover {
           stroke: #090d16 !important;
-          stroke-width: 1.8 !important;
-          filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.3));
-          transform: translateY(-4px) scale(1.025);
+          stroke-width: 1.6 !important;
+          filter: drop-shadow(0 8px 18px rgba(15, 23, 42, 0.25));
+          transform: translateY(-3px) scale(1.02);
         }
 
         ${css}
