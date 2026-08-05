@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
-import { env } from '../config/env.js';
 
 /** Thrown by services for expected, user-facing failures. */
 export class HttpError extends Error {
@@ -53,11 +52,9 @@ export function errorHandler(
   }
 
   console.error('[error]', err);
+  const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
+
   res.status(500).json({
-    error: env.isProduction
-      ? 'Something went wrong. Please try again.'
-      : err instanceof Error
-        ? err.message
-        : 'Unknown error'
+    error: message
   });
 }

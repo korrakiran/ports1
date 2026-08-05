@@ -4,23 +4,32 @@ import { env } from '../config/env.js';
 let connectionPromise: Promise<mongoose.Mongoose> | null = null;
 
 /**
- * Connects to MongoDB with robust connection reuse for Vercel serverless functions.
+ * Connects to MongoDB with robust connection reuse and stale-promise eviction for Vercel serverless.
  */
-export function connectDatabase(): Promise<mongoose.Mongoose> {
+export async function connectDatabase(): Promise<mongoose.Mongoose> {
+  // If connection is already open and active, return immediately
   if (mongoose.connection.readyState === 1) {
-    return Promise.resolve(mongoose);
+    return mongoose;
   }
 
+  // If a connection attempt is in-flight, await it safely
   if (connectionPromise) {
-    return connectionPromise;
+    try {
+      const m = await connectionPromise;
+      if (m.connection.readyState === 1) return m;
+    } catch {
+      connectionPromise = null;
+    }
   }
 
   mongoose.set('strictQuery', true);
+
   connectionPromise = mongoose
     .connect(env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 8000,
-      connectTimeoutMS: 8000,
-      maxPoolSize: 10
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+      maxPoolSize: 10,
+      socketTimeoutMS: 45000
     })
     .then((m) => {
       console.log(`[db] connected to ${m.connection.host}/${m.connection.name}`);
@@ -28,7 +37,7 @@ export function connectDatabase(): Promise<mongoose.Mongoose> {
     })
     .catch((err) => {
       connectionPromise = null;
-      console.error(`[db] failed to connect to MONGODB_URI:`, err instanceof Error ? err.message : err);
+      console.error(`[db] connection failed:`, err instanceof Error ? err.message : err);
       throw err;
     });
 
