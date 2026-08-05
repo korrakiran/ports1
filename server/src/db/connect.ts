@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import { env } from '../config/env.js';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 let connectionPromise: Promise<mongoose.Mongoose> | null = null;
+let mongod: MongoMemoryServer | null = null;
 
 /**
  * Connects to MongoDB with robust connection reuse and stale-promise eviction for Vercel serverless.
@@ -24,8 +26,24 @@ export async function connectDatabase(): Promise<mongoose.Mongoose> {
 
   mongoose.set('strictQuery', true);
 
+  let uri = env.MONGODB_URI;
+  if (env.NODE_ENV === 'development' && (uri.includes('127.0.0.1') || uri.includes('localhost'))) {
+    try {
+      if (!mongod) {
+        console.log('[db] Starting in-memory MongoDB server...');
+        mongod = await MongoMemoryServer.create();
+        uri = mongod.getUri();
+        console.log(`[db] In-memory MongoDB server started at ${uri}`);
+      } else {
+        uri = mongod.getUri();
+      }
+    } catch (err) {
+      console.warn('[db] Failed to start in-memory MongoDB server, falling back to MONGODB_URI:', err);
+    }
+  }
+
   connectionPromise = mongoose
-    .connect(env.MONGODB_URI, {
+    .connect(uri, {
       serverSelectionTimeoutMS: 10000,
       connectTimeoutMS: 10000,
       maxPoolSize: 10,
@@ -51,4 +69,8 @@ export function getMongoClientPromise(): Promise<any> {
 export async function disconnectDatabase(): Promise<void> {
   await mongoose.disconnect();
   connectionPromise = null;
+  if (mongod) {
+    await mongod.stop();
+    mongod = null;
+  }
 }
